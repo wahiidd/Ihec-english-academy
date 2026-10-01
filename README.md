@@ -27,6 +27,16 @@ npm run preview   # serve the production build
 Empty values in `site.ts` show a "coming soon" state on the site (e.g. greyed-out social icons,
 "Registration opens soon" button). Fill them in and redeploy.
 
+## Design system
+
+This branch was redesigned with the [Hallmark](https://github.com/nutlope/hallmark) skill
+(editorial genre, *Narrative Workflow* structure: the page walks through four stages —
+I Join · II Practise · III Train · IV Certify).
+
+- All colours, fonts, spacing and motion values are tokens in `tokens.css` — change them there, never inline.
+- Fonts: Fraunces (headings) + IBM Plex Sans (text), self-hosted via `@fontsource`.
+- `.hallmark/` records the design choices so future Hallmark runs stay consistent.
+
 ## Deployment
 
 The site deploys as-is on **Netlify** or **Vercel** from the GitHub repository:

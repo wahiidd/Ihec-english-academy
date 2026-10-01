@@ -1,6 +1,8 @@
 ---
-import Icon from './Icon.astro';
-import { t, homePath, otherLang, type Lang } from '../i18n/utils';
+/* N6 · Newspaper masthead — issue line above · wordmark 2xl · double rule.
+   Editorial default nav: the site reads as an issue of the academy, not as a SaaS bar. */
+import { site } from '../config/site';
+import { t, homePath, otherLang, launchDateLabel, type Lang } from '../i18n/utils';
 
 interface Props {
   lang: Lang;
@@ -9,88 +11,101 @@ interface Props {
 }
 
 const { lang, onHome = true } = Astro.props;
-const dict = t(lang);
+const dict = t(lang).nav;
 const other = otherLang(lang);
 const base = onHome ? '' : homePath(lang);
+const launchDate = launchDateLabel(lang);
+const launched = Date.now() >= Date.parse(site.launchDate);
 
 const links = [
-  ['about', dict.nav.about],
-  ['activities', dict.nav.activities],
-  ['ielts', dict.nav.ielts],
-  ['membership', dict.nav.membership],
-  ['team', dict.nav.team],
-  ['events', dict.nav.events],
-  ['contact', dict.nav.contact],
+  ['journey', dict.journey],
+  ['team', dict.team],
+  ['events', dict.events],
+  ['contact', dict.contact],
 ] as const;
 ---
 
-<header class="header" data-header>
-  <div class="container header__inner">
-    <a class="brand" href={homePath(lang)} aria-label={dict.nav.home}>
+<header class="mast" data-mast>
+  <div class="wrap">
+    <div class="mast__line">
+      <p class="mast__issue tnum">
+        <span class="mast__school">IHEC Carthage</span>
+        <span class="mast__school" aria-hidden="true">·</span>
+        <span data-launch={site.launchDate} data-locale={lang}>
+          <span data-launch-before hidden={launched}>
+            {dict.launchBefore} {launchDate}<span data-launch-rel></span>
+          </span>
+          <span data-launch-after hidden={!launched}>{dict.launchAfter} {launchDate}</span>
+        </span>
+      </p>
+      <a class="mast__lang" href={homePath(other)} hreflang={other} lang={other} data-lang-switch>
+        {dict.switchShort}
+      </a>
+    </div>
+
+    <a class="mast__name" href={homePath(lang)} aria-label={dict.home}>
       <picture>
         <source srcset="/images/emblem.webp" type="image/webp" />
-        <img src="/images/emblem.png" alt="" width="55" height="44" />
+        <img src="/images/emblem.png" alt="" width="240" height="192" fetchpriority="high" />
       </picture>
-      <span class="brand__text">
-        <span class="brand__ihec">IHEC Carthage</span>
-        <span class="brand__name">English <span>Academy</span></span>
-      </span>
+      <span>IHEC English Academy</span>
     </a>
 
-    <nav class="nav" id="site-nav" aria-label={dict.nav.menu} data-nav>
-      <ul>
+    <nav class="mast__nav" aria-label={dict.primary}>
+      <button class="mast__toggle" type="button" aria-expanded="false" aria-controls="mast-links" data-menu-toggle>
+        <span data-label-open>{dict.menu}</span>
+        <span data-label-close hidden>{dict.close}</span>
+      </button>
+      <ul id="mast-links" data-menu>
         {links.map(([id, label]) => <li><a href={`${base}#${id}`}>{label}</a></li>)}
       </ul>
     </nav>
 
-    <div class="header__actions">
-      <a
-        class="lang-switch"
-        href={homePath(other)}
-        hreflang={other}
-        lang={other}
-        aria-label={dict.nav.switchLabel}
-        title={dict.nav.switchLabel}
-        data-lang-switch
-      >
-        <Icon name="globe" size={18} />
-        <span>{dict.nav.switchShort}</span>
-      </a>
-      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
-        <span class="visually-hidden">{dict.nav.menu}</span>
-        <Icon name="menu" class="icon-open" />
-        <Icon name="close" class="icon-close" />
-      </button>
-    </div>
+    <hr class="mast__rule" aria-hidden="true" />
   </div>
 </header>
 
 <script>
-  const header = document.querySelector<HTMLElement>('[data-header]');
-  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
-  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  // Launch line: relative day count before the launch, "open since" after.
+  const launch = document.querySelector<HTMLElement>('[data-launch]');
+  if (launch) {
+    const target = Date.parse(launch.dataset.launch ?? '');
+    const before = launch.querySelector<HTMLElement>('[data-launch-before]')!;
+    const after = launch.querySelector<HTMLElement>('[data-launch-after]')!;
+    const rel = launch.querySelector<HTMLElement>('[data-launch-rel]')!;
+    const diff = target - Date.now();
+    if (diff > 0) {
+      const days = Math.ceil(diff / 86_400_000);
+      const rtf = new Intl.RelativeTimeFormat(launch.dataset.locale, { numeric: 'auto' });
+      rel.textContent = ` · ${rtf.format(days, 'day')}`;
+      before.hidden = false;
+      after.hidden = true;
+    } else {
+      before.hidden = true;
+      after.hidden = false;
+    }
+  }
 
+  // Mobile disclosure for the link row.
+  const mast = document.querySelector<HTMLElement>('[data-mast]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
   const setOpen = (open: boolean) => {
     toggle?.setAttribute('aria-expanded', String(open));
-    header?.classList.toggle('is-open', open);
-    document.body.style.overflow = open ? 'hidden' : '';
+    mast?.classList.toggle('is-open', open);
+    toggle?.querySelector<HTMLElement>('[data-label-open]')?.toggleAttribute('hidden', open);
+    toggle?.querySelector<HTMLElement>('[data-label-close]')?.toggleAttribute('hidden', !open);
   };
-
   toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
-  nav?.addEventListener('click', (e) => {
+  menu?.addEventListener('click', (e) => {
     if ((e.target as HTMLElement).closest('a')) setOpen(false);
   });
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && header?.classList.contains('is-open')) {
+    if (e.key === 'Escape' && mast?.classList.contains('is-open')) {
       setOpen(false);
       toggle?.focus();
     }
   });
-  window.matchMedia('(min-width: 1080px)').addEventListener('change', (e) => e.matches && setOpen(false));
-
-  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
-  onScroll();
-  window.addEventListener('scroll', onScroll, { passive: true });
 
   // Keep the current section when switching language.
   document.querySelector<HTMLAnchorElement>('[data-lang-switch]')?.addEventListener('click', (e) => {
@@ -100,184 +115,145 @@ const links = [
 </script>
 
 <style>
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    height: var(--header-h);
-    background: rgb(255 255 255 / 0.85);
-    backdrop-filter: saturate(1.4) blur(12px);
-    -webkit-backdrop-filter: saturate(1.4) blur(12px);
-    border-bottom: 1px solid transparent;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  .mast {
+    padding-top: var(--space-md);
+    text-align: center;
   }
-  .header.is-scrolled {
-    border-bottom-color: var(--line);
-    box-shadow: 0 4px 20px rgb(15 42 92 / 0.06);
-  }
-  .header__inner {
+
+  .mast__line {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    height: 100%;
+    gap: var(--space-md);
+    padding-bottom: var(--space-sm);
+    border-bottom: var(--rule-hair) solid var(--color-rule-2);
+    font-size: var(--text-xs);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--color-muted);
   }
-
-  .brand {
+  .mast__issue {
     display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    text-decoration: none;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    text-align: start;
+  }
+  [hidden] {
+    display: none !important;
+  }
+  .mast__lang {
     flex-shrink: 0;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--color-brand);
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-underline-offset: 2px;
+    white-space: nowrap;
   }
-  .brand img {
-    width: auto;
-    height: 40px;
-  }
-  .brand__text {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.1;
-  }
-  .brand__ihec {
-    font-size: 0.68rem;
-    font-weight: 500;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--navy);
-  }
-  .brand__name {
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--navy);
-  }
-  .brand__name span {
-    color: var(--teal-ink);
+  .mast__lang:hover {
+    text-decoration-thickness: 2px;
   }
 
-  .nav ul {
-    display: flex;
-    gap: 0.25rem;
+  .mast__name {
+    display: inline-flex;
+    align-items: center;
+    min-height: 48px;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: clamp(1.2rem, 4.2vw + 0.4rem, 2.75rem);
+    white-space: nowrap;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--color-brand);
+    text-decoration: none;
+  }
+  .mast__name img {
+    width: auto;
+    height: 1.35em;
+  }
+
+  .mast__nav {
+    margin-top: var(--space-md);
+  }
+  .mast__nav ul {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2xs) var(--space-xl);
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  .nav a {
-    display: block;
-    padding: 0.5rem 0.7rem;
-    border-radius: 8px;
-    font-size: 0.92rem;
-    font-weight: 500;
-    color: var(--ink);
-    text-decoration: none;
-  }
-  .nav a:hover {
-    color: var(--navy);
-    background: var(--bg-soft);
-  }
-
-  .header__actions {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .lang-switch {
+  .mast__nav a {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    min-height: 40px;
-    padding: 0.4rem 0.8rem;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--navy);
+    min-height: 44px;
+    color: var(--color-ink);
     text-decoration: none;
-    background: #fff;
+    white-space: nowrap;
   }
-  .lang-switch:hover {
-    border-color: var(--navy);
+  .mast__nav a:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
   }
 
-  .menu-toggle {
+  .mast__toggle {
     display: none;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: #fff;
-    color: var(--navy);
+    min-height: 44px;
+    padding: 0 var(--space-lg);
+    border: var(--rule-hair) solid var(--color-ink);
+    border-radius: var(--radius-input);
+    background: transparent;
+    color: var(--color-ink);
+    font: 600 var(--text-sm) / 1 var(--font-body);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     cursor: pointer;
   }
-  .menu-toggle :global(.icon-close) {
-    display: none;
-  }
-  .is-open .menu-toggle :global(.icon-open) {
-    display: none;
-  }
-  .is-open .menu-toggle :global(.icon-close) {
-    display: block;
+  .mast__toggle:active {
+    transform: translateY(1px);
   }
 
-  @media (max-width: 1079px) {
-    .menu-toggle {
-      display: grid;
-    }
-    .nav {
-      position: fixed;
-      inset: var(--header-h) 0 0 0;
-      padding: 1.5rem var(--gutter) 2rem;
-      background: #fff;
-      border-top: 1px solid var(--line);
-      overflow-y: auto;
-      visibility: hidden;
-      opacity: 0;
-      transform: translateY(-8px);
-      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
-    }
-    .is-open .nav {
-      visibility: visible;
-      opacity: 1;
-      transform: none;
-    }
-    .nav ul {
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-    .nav a {
-      padding: 0.9rem 0.5rem;
-      font-size: 1.15rem;
-      border-bottom: 1px solid var(--line);
-      border-radius: 0;
-    }
+  .mast__rule {
+    height: 4px;
+    margin: var(--space-sm) 0 0;
+    border: 0;
+    border-top: var(--rule-hair) solid var(--color-ink);
+    border-bottom: var(--rule-hair) solid var(--color-ink);
   }
 
-  @media (max-width: 479px) {
-    .header__inner {
-      gap: 0.5rem;
-    }
-    .brand {
-      gap: 0.5rem;
-    }
-    .brand img {
-      height: 34px;
-    }
-    .brand__ihec {
-      font-size: 0.58rem;
-      letter-spacing: 0.18em;
-    }
-    .brand__name {
-      font-size: 0.9rem;
-      letter-spacing: 0;
-    }
-    .lang-switch {
-      padding-inline: 0.65rem;
-    }
-    .lang-switch :global(svg) {
+  @media (max-width: 39.99rem) {
+    .mast__school {
       display: none;
+    }
+    .mast__toggle {
+      display: inline-flex;
+      align-items: center;
+    }
+    .mast__nav ul {
+      display: none;
+    }
+    .mast.is-open .mast__nav ul {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-top: var(--space-sm);
+      gap: 0;
+      text-align: start;
+    }
+    .mast.is-open .mast__nav li + li {
+      border-top: var(--rule-hair) solid var(--color-rule-2);
+    }
+    .mast.is-open .mast__nav a {
+      width: 100%;
+      font-size: var(--text-md);
     }
   }
 </style>

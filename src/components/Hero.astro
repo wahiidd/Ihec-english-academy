@@ -1,205 +1,121 @@
 ---
-import Icon from './Icon.astro';
-import { site } from '../config/site';
-import { t, launchDateLabel, type Lang } from '../i18n/utils';
+/* H1 · Marquee — the academy's own motto is the statement; the four stages sit under one rule
+   as the page's opening line (Narrative Workflow). No CTA in the fold. */
+import { t, type Lang } from '../i18n/utils';
 
 interface Props {
   lang: Lang;
 }
 
 const { lang } = Astro.props;
-const dict = t(lang).hero;
-const launchDate = launchDateLabel(lang);
-// Initial state at build time; the script below re-evaluates it in the browser.
-const launched = Date.now() >= Date.parse(site.launchDate);
-const joinHref = site.joinUrl || '#membership';
+const dict = t(lang);
+const stages = [
+  ['join', dict.stages.join],
+  ['practise', dict.stages.practise],
+  ['train', dict.stages.train],
+  ['certify', dict.stages.certify],
+] as const;
 ---
 
-<section class="hero">
-  <div class="hero__bg" aria-hidden="true"></div>
-  <div class="container hero__inner">
-    <div class="hero__text">
-      <div
-        class="launch"
-        data-launch={site.launchDate}
-        data-unit-d={dict.units.d}
-        data-unit-h={dict.units.h}
-        data-unit-m={dict.units.m}
-      >
-        <Icon name="calendar" size={18} />
-        <span data-launch-before hidden={launched}>
-          {dict.launchBefore} <strong>{launchDate}</strong>{' '}
-          <span class="launch__count" data-countdown-wrap hidden>
-            · {dict.countdownLabel} <span data-countdown></span>
-          </span>
-        </span>
-        <span data-launch-after hidden={!launched}>
-          {dict.launchAfter} <strong>{launchDate}</strong>
-        </span>
-      </div>
+<section class="marquee">
+  <div class="wrap">
+    <h1 lang="en">
+      {dict.hero.statement.map((word) => <span class="marquee__word">{word}<span class="marquee__stop">.</span></span>)}
+    </h1>
 
-      <p class="eyebrow">{dict.eyebrow}</p>
-      <h1>
-        {dict.titleStart} <em>{dict.titleAccent}</em>
-      </h1>
-      <p class="hero__lead">{dict.lead}</p>
-
-      <div class="hero__ctas">
-        <a
-          class="btn btn--primary"
-          href={joinHref}
-          {...(site.joinUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-        >
-          {dict.ctaPrimary}
-        </a>
-        <a class="btn btn--ghost" href="#activities">{dict.ctaSecondary}</a>
-      </div>
-    </div>
-
-    <div class="hero__visual">
-      <picture>
-        <source srcset="/images/logo-full.webp" type="image/webp" />
-        <img src="/images/logo-full.png" alt={dict.logoAlt} width="900" height="470" fetchpriority="high" />
-      </picture>
-    </div>
+    <nav class="marquee__index" aria-label={dict.hero.indexLabel}>
+      <ol>
+        {
+          stages.map(([id, stage]) => (
+            <li>
+              <a href={`#${id}`}>
+                <span class="marquee__num">{stage.numeral}</span>
+                <span class="marquee__name">{stage.name}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </nav>
   </div>
 </section>
 
-<script>
-  const el = document.querySelector<HTMLElement>('[data-launch]');
-  if (el) {
-    const target = Date.parse(el.dataset.launch ?? '');
-    const before = el.querySelector<HTMLElement>('[data-launch-before]')!;
-    const after = el.querySelector<HTMLElement>('[data-launch-after]')!;
-    const wrap = el.querySelector<HTMLElement>('[data-countdown-wrap]')!;
-    const out = el.querySelector<HTMLElement>('[data-countdown]')!;
-    const { unitD, unitH, unitM } = el.dataset;
-
-    const tick = () => {
-      const diff = target - Date.now();
-      if (diff <= 0) {
-        before.hidden = true;
-        after.hidden = false;
-        clearInterval(timer);
-        return;
-      }
-      const minutes = Math.floor(diff / 60000);
-      const d = Math.floor(minutes / 1440);
-      const h = Math.floor((minutes % 1440) / 60);
-      const m = minutes % 60;
-      out.textContent = d > 0 ? `${d} ${unitD} ${h} ${unitH}` : `${h} ${unitH} ${m} ${unitM}`;
-      before.hidden = false;
-      after.hidden = true;
-      wrap.hidden = false;
-    };
-    const timer = setInterval(tick, 30_000);
-    tick();
-  }
-</script>
-
 <style>
-  .hero {
-    position: relative;
-    overflow: hidden;
-    padding-block: clamp(3rem, 8vw, 6.5rem) clamp(4rem, 9vw, 7rem);
+  .marquee {
+    padding-block: var(--space-2xl) var(--space-3xl);
   }
-  .hero__bg {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    background:
-      radial-gradient(40rem 28rem at 92% 10%, rgb(58 155 213 / 0.16), transparent 70%),
-      radial-gradient(34rem 26rem at 70% 95%, rgb(43 165 155 / 0.14), transparent 70%),
-      linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
-  }
-  .hero__inner {
-    display: grid;
-    gap: clamp(2.5rem, 6vw, 4rem);
-    align-items: center;
-  }
-  @media (min-width: 960px) {
-    .hero__inner {
-      grid-template-columns: 1.1fr 0.9fr;
-    }
-  }
-
-  .launch {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 1.75rem;
-    padding: 0.5rem 1.1rem 0.5rem 0.85rem;
-    border-radius: 999px;
-    background: #fff;
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
-    font-size: 0.88rem;
-    color: var(--ink);
-  }
-  .launch :global(svg) {
-    color: var(--teal-ink);
-    flex-shrink: 0;
-  }
-  .launch strong {
-    color: var(--navy);
-  }
-  @media (max-width: 479px) {
-    .launch {
-      align-items: flex-start;
-      border-radius: 16px;
-    }
-    .launch :global(svg) {
-      margin-top: 2px;
-    }
-  }
-  .launch__count {
-    color: var(--teal-ink);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-  }
-  [hidden] {
-    display: none !important;
-  }
-
-  .eyebrow {
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--blue-ink);
-  }
-  h1 em {
-    display: block;
-    font-style: italic;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    padding-bottom: 0.08em;
-  }
-  .hero__lead {
-    max-width: 38rem;
-    margin-top: 1.5rem;
-    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
-    color: var(--muted);
-  }
-  .hero__ctas {
+  h1 {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2.25rem;
+    flex-direction: column;
+    font-size: clamp(2.6rem, 8vw + 0.5rem, 5.5rem);
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+  .marquee__word {
+    display: block;
+  }
+  .marquee__stop {
+    color: var(--color-accent);
   }
 
-  .hero__visual {
-    position: relative;
-    padding: clamp(1.5rem, 4vw, 2.75rem);
-    border-radius: var(--radius-lg);
-    background: #fff;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--line);
+  .marquee__index {
+    margin-top: clamp(var(--space-xl), 6vw, var(--space-3xl));
+    border-top: var(--rule-hair) solid var(--color-ink);
   }
-  .hero__visual img {
-    width: 100%;
+  .marquee__index ol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .marquee__index li {
+    border-bottom: var(--rule-hair) solid var(--color-rule);
+  }
+  .marquee__index li:nth-child(odd) {
+    border-right: var(--rule-hair) solid var(--color-rule);
+  }
+  .marquee__index a {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    min-height: 44px;
+    padding: var(--space-md) var(--space-sm);
+    color: var(--color-ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .marquee__index a:hover .marquee__name {
+    text-decoration: underline;
+    text-decoration-color: var(--color-accent);
+    text-decoration-thickness: 2px;
+    text-underline-offset: 2px;
+  }
+  .marquee__num {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-accent);
+    min-width: 2.2ch;
+  }
+  .marquee__name {
+    font-weight: 600;
+  }
+
+  @media (min-width: 60rem) {
+    .marquee__index ol {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+    .marquee__index li {
+      border-bottom: 0;
+    }
+    .marquee__index li:not(:last-child) {
+      border-right: var(--rule-hair) solid var(--color-rule);
+    }
+    .marquee__index a {
+      padding: var(--space-lg) var(--space-md);
+    }
+    .marquee__index li:first-child a {
+      padding-left: 0;
+    }
   }
 </style>

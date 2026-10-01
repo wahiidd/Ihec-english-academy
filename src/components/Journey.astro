@@ -1,0 +1,50 @@
+---
+/* Narrative Workflow — the four stages in order, one global "start at stage I" link at the foot. */
+import Membership from './Membership.astro';
+import Activities from './Activities.astro';
+import Certifications from './Certifications.astro';
+import Partner from './Partner.astro';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).journey;
+---
+
+<section class="journey" id="journey" aria-labelledby="journey-title">
+  <div class="wrap">
+    <h2 id="journey-title">{dict.title}</h2>
+    <ol class="journey__stages">
+      <Membership lang={lang} />
+      <Activities lang={lang} />
+      <Certifications lang={lang} />
+      <Partner lang={lang} />
+    </ol>
+    <p class="journey__restart">
+      <a class="link" href="#join">{dict.restart} <span aria-hidden="true">→</span></a>
+    </p>
+  </div>
+</section>
+
+<style>
+  .journey {
+    padding-block: var(--space-2xl) var(--space-3xl);
+    background: var(--color-paper-2);
+  }
+  h2 {
+    max-width: 18ch;
+    margin-bottom: var(--space-2xl);
+  }
+  .journey__stages {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .journey__restart {
+    padding-top: var(--space-lg);
+    border-top: var(--rule-thick) solid var(--color-brand);
+  }
+</style>

@@ -1,0 +1,59 @@
+---
+/* F4 · Step sequence — one stage of the journey. Thick numbered rule on top,
+   numeral stacked directly above the heading (same column), content beside on desktop. */
+interface Props {
+  id: string;
+  numeral: string;
+  name: string;
+  title: string;
+  stageLabel: string;
+}
+
+const { id, numeral, name, title, stageLabel } = Astro.props;
+---
+
+<li class="stage" id={id}>
+  <header class="stage__head">
+    <p class="stage__num" aria-hidden="true">{numeral}</p>
+    <h3><span class="visually-hidden">{stageLabel} {numeral} · {name} — </span>{title}</h3>
+  </header>
+  <div class="stage__body">
+    <slot />
+  </div>
+</li>
+
+<style>
+  .stage {
+    display: grid;
+    gap: var(--space-lg) var(--space-3xl);
+    padding-block: var(--space-lg) var(--space-3xl);
+    border-top: var(--rule-thick) solid var(--color-brand);
+    scroll-margin-top: var(--space-lg);
+  }
+  @media (min-width: 60rem) {
+    .stage {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 7fr);
+    }
+    .stage__head {
+      position: sticky;
+      top: var(--space-lg);
+      align-self: start;
+    }
+  }
+  .stage__num {
+    font-family: var(--font-display);
+    font-weight: 300;
+    font-size: var(--text-numeral);
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--color-brand);
+  }
+  h3 {
+    margin-top: var(--space-sm);
+    font-size: var(--text-2xl);
+  }
+  .stage__body {
+    min-width: 0;
+    max-width: var(--measure);
+  }
+</style>

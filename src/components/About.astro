@@ -1,4 +1,6 @@
 ---
+/* Standfirst — the "what is this" paragraph in a 7/5 asymmetric split, facts as a hairline ledger. */
+import { site } from '../config/site';
 import { t, launchDateLabel, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -6,128 +8,82 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const dict = t(lang).about;
+const dict = t(lang);
 const facts = [
-  [dict.facts.launch, launchDateLabel(lang)],
-  [dict.facts.supervision, dict.facts.supervisionValue],
-  [dict.facts.focus, dict.facts.focusValue],
+  [dict.hero.facts.launch, launchDateLabel(lang)],
+  [dict.hero.facts.supervision, dict.hero.facts.supervisionValue],
+  [dict.hero.facts.focus, dict.hero.facts.focusValue],
+  [dict.hero.facts.fee, `${site.membershipFee} ${dict.membership.currency} ${dict.membership.period}`],
 ];
 ---
 
-<section class="section" id="about">
-  <div class="container">
-    <div class="about">
-      <div>
-        <p class="kicker">{dict.kicker}</p>
-        <h2>{dict.title}</h2>
-      </div>
-      <div class="about__body">
-        {dict.paragraphs.map((p) => <p>{p}</p>)}
-        <dl class="facts">
-          {
-            facts.map(([label, value]) => (
-              <div>
-                <dt>{label}</dt>
-                <dd>{value}</dd>
-              </div>
-            ))
-          }
-        </dl>
-      </div>
+<section class="standfirst" id="about">
+  <div class="wrap standfirst__grid">
+    <div class="standfirst__text">
+      <p class="standfirst__lede">{dict.hero.lede}</p>
+      <p class="standfirst__note">{dict.hero.supervision}</p>
     </div>
-
-    <ol class="pillars">
+    <dl class="ledger tnum">
       {
-        dict.pillars.map((pillar, i) => (
-          <li class="pillar">
-            <span class="pillar__num" aria-hidden="true">0{i + 1}</span>
-            <h3>{pillar.title}</h3>
-            <p>{pillar.text}</p>
-          </li>
+        facts.map(([label, value]) => (
+          <div>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
         ))
       }
-    </ol>
+    </dl>
   </div>
 </section>
 
 <style>
-  .about {
-    display: grid;
-    gap: 1.5rem 4rem;
+  .standfirst {
+    padding-block: 0 var(--space-3xl);
   }
-  @media (min-width: 900px) {
-    .about {
-      grid-template-columns: 0.85fr 1.15fr;
+  .standfirst__grid {
+    display: grid;
+    gap: var(--space-xl) var(--space-3xl);
+  }
+  @media (min-width: 60rem) {
+    .standfirst__grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      align-items: start;
     }
   }
-  .about__body {
+  .standfirst__text {
     display: grid;
-    gap: 1.1rem;
-    font-size: 1.05rem;
-    color: var(--muted);
+    gap: var(--space-lg);
+    max-width: var(--measure);
+  }
+  .standfirst__lede {
+    font-family: var(--font-display);
+    font-size: var(--text-lg);
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+  .standfirst__note {
+    color: var(--color-muted);
   }
 
-  .facts {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 1rem;
-    margin: 0.75rem 0 0;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--line);
+  .ledger {
+    margin: 0;
+    border-top: var(--rule-hair) solid var(--color-ink);
   }
-  .facts dt {
-    font-size: 0.78rem;
+  .ledger div {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding-block: var(--space-sm);
+    border-bottom: var(--rule-hair) solid var(--color-rule);
+  }
+  .ledger dt {
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+  .ledger dd {
+    margin: 0;
     font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--teal-ink);
-  }
-  .facts dd {
-    margin: 0.2rem 0 0;
-    font-family: var(--font-serif);
-    font-size: 1.2rem;
-    color: var(--navy);
-  }
-
-  .pillars {
-    display: grid;
-    gap: 1.25rem;
-    margin: clamp(3rem, 6vw, 4.5rem) 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  @media (min-width: 760px) {
-    .pillars {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-  .pillar {
-    position: relative;
-    padding: 2rem 1.75rem;
-    border-radius: var(--radius);
-    background: var(--bg-soft);
-    overflow: hidden;
-  }
-  .pillar::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto 0;
-    height: 4px;
-    background: var(--gradient);
-  }
-  .pillar__num {
-    display: block;
-    margin-bottom: 0.75rem;
-    font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.1em;
-    color: var(--blue-ink);
-  }
-  .pillar h3 {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .pillar p {
-    color: var(--muted);
+    color: var(--color-brand);
+    text-align: end;
   }
 </style>

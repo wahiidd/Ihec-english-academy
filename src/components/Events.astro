@@ -1,5 +1,5 @@
 ---
-import Icon from './Icon.astro';
+/* Events — hairline list with tabular dates; honest three-beat empty state until the first event is added. */
 import { events } from '../data/events';
 import { t, formatDate, launchDateLabel, type Lang } from '../i18n/utils';
 
@@ -14,40 +14,33 @@ const upcoming = events
   .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
 ---
 
-<section class="section section--soft" id="events">
-  <div class="container">
-    <div class="section-head">
-      <p class="kicker">{dict.kicker}</p>
-      <h2>{dict.title}</h2>
-    </div>
-
+<section class="events" id="events" aria-labelledby="events-title">
+  <div class="wrap">
+    <h2 id="events-title">{dict.title}</h2>
     {
       upcoming.length > 0 ? (
-        <ul class="events">
+        <ol class="events__list">
           {upcoming.map((event) => (
-            <li class="event" data-event-date={event.date}>
-              <div class="event__date">
-                <span class="event__day">{formatDate(event.date, lang, { month: undefined, year: undefined })}</span>
-                <span class="event__month">{formatDate(event.date, lang, { day: undefined, month: 'short' })}</span>
-              </div>
-              <div class="event__body">
-                <span class="badge">{dict.formats[event.format]}</span>
+            <li data-event-date={event.date}>
+              <p class="events__date tnum">{formatDate(event.date, lang)}</p>
+              <div>
                 <h3>{event.title[lang]}</h3>
                 {event.description && <p>{event.description[lang]}</p>}
-                <p class="event__meta">
-                  {formatDate(event.date, lang, { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
+                <p class="events__meta">
+                  {dict.formats[event.format]}
                   {event.place && <> · {event.place[lang]}</>}
+                  {' · '}
+                  <span class="tnum">{formatDate(event.date, lang, { day: undefined, month: undefined, year: undefined, hour: '2-digit', minute: '2-digit' })}</span>
                 </p>
               </div>
             </li>
           ))}
-        </ul>
+        </ol>
       ) : (
-        <div class="empty">
-          <span class="empty__icon">
-            <Icon name="calendar" size={28} />
-          </span>
-          <p>{dict.empty.replace('{date}', launchDateLabel(lang))}</p>
+        <div class="events__empty">
+          <h3>{dict.emptyTitle}</h3>
+          <p>{dict.emptyText.replace('{date}', launchDateLabel(lang))}</p>
+          <a class="link" href="#contact">{dict.emptyAction} <span aria-hidden="true">→</span></a>
         </div>
       )
     }
@@ -62,81 +55,59 @@ const upcoming = events
 </script>
 
 <style>
-  .empty {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    max-width: 760px;
-    padding: 1.75rem;
-    border-radius: var(--radius);
-    border: 1px dashed #c3d2e1;
-    background: #fff;
-    color: var(--muted);
-    font-size: 1.05rem;
-  }
-  .empty__icon {
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: rgb(58 155 213 / 0.12);
-    color: var(--blue-ink);
-  }
-
   .events {
+    padding-block: var(--space-2xl) var(--space-4xl);
+  }
+  .events__empty,
+  .events__list {
+    margin: var(--space-xl) 0 0;
+    border-top: var(--rule-hair) solid var(--color-ink);
+  }
+  .events__empty {
     display: grid;
-    gap: 1rem;
-    margin: 0;
+    justify-items: start;
+    gap: var(--space-xs);
+    padding-top: var(--space-lg);
+    max-width: var(--measure);
+  }
+  .events__empty h3 {
+    font-size: var(--text-lg);
+  }
+  .events__empty p {
+    margin-bottom: var(--space-sm);
+    color: var(--color-ink-2);
+  }
+  .events__list {
     padding: 0;
     list-style: none;
   }
-  .event {
-    display: flex;
-    gap: 1.5rem;
-    padding: 1.5rem;
-    border-radius: var(--radius);
-    background: #fff;
-    border: 1px solid var(--line);
+  .events__list li {
+    display: grid;
+    gap: var(--space-xs) var(--space-xl);
+    padding-block: var(--space-lg);
+    border-bottom: var(--rule-hair) solid var(--color-rule);
   }
-  .event[hidden] {
+  .events__list li[hidden] {
     display: none;
   }
-  .event__date {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 76px;
-    height: 76px;
-    border-radius: 14px;
-    background: var(--navy);
-    color: #fff;
-    line-height: 1.1;
+  @media (min-width: 40rem) {
+    .events__list li {
+      grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+    }
   }
-  .event__day {
-    font-family: var(--font-serif);
-    font-size: 1.7rem;
+  .events__date {
+    font-family: var(--font-display);
     font-weight: 700;
+    color: var(--color-brand);
   }
-  .event__month {
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--teal-light);
+  .events__list h3 {
+    font-size: var(--text-lg);
   }
-  .event__body {
-    display: grid;
-    gap: 0.4rem;
-    justify-items: start;
+  .events__list p {
+    color: var(--color-ink-2);
   }
-  .event__body p {
-    color: var(--muted);
-  }
-  .event__meta {
-    font-size: 0.9rem;
-    font-weight: 500;
+  .events__meta {
+    margin-top: var(--space-xs);
+    font-size: var(--text-sm);
   }
 </style>

@@ -1,5 +1,6 @@
 ---
-import Icon from './Icon.astro';
+/* Stage II · Practise — F3 Tabular spec sheet: format | what happens, hairline on every row. */
+import Stage from './Stage.astro';
 import { t, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -7,91 +8,67 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const dict = t(lang).activities;
-const items = [
-  { key: 'courses', icon: 'courses', hybrid: false },
-  { key: 'workshops', icon: 'workshops', hybrid: true },
-  { key: 'debates', icon: 'debates', hybrid: false },
-  { key: 'training', icon: 'training', hybrid: false },
-] as const;
+const dict = t(lang);
+const a = dict.activities;
 ---
 
-<section class="section section--soft" id="activities">
-  <div class="container">
-    <div class="section-head">
-      <p class="kicker">{dict.kicker}</p>
-      <h2>{dict.title}</h2>
-      <p>{dict.intro}</p>
-    </div>
-
-    <ul class="cards">
-      {
-        items.map(({ key, icon, hybrid }) => (
-          <li class="card">
-            <div class="card__top">
-              <span class="card__icon">
-                <Icon name={icon} size={26} />
-              </span>
-              {hybrid && <span class="badge">{dict.hybrid}</span>}
-            </div>
-            <h3>{dict.items[key].title}</h3>
-            <p>{dict.items[key].text}</p>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
-</section>
+<Stage id="practise" numeral={dict.stages.practise.numeral} name={dict.stages.practise.name} title={a.title} stageLabel={dict.stages.stage}>
+  <p class="lead">{a.text}</p>
+  <dl class="spec">
+    {
+      a.items.map((item) => (
+        <div class="spec__row">
+          <dt>
+            {item.title}
+            {item.key === 'workshops' && <span class="spec__tag">{a.hybrid}</span>}
+          </dt>
+          <dd>{item.text}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</Stage>
 
 <style>
-  .cards {
+  .lead {
+    font-size: var(--text-md);
+    line-height: 1.5;
+  }
+  .spec {
+    margin: var(--space-xl) 0 0;
+    border-top: var(--rule-hair) solid var(--color-ink);
+  }
+  .spec__row {
     display: grid;
-    gap: 1.25rem;
+    gap: var(--space-2xs) var(--space-lg);
+    padding-block: var(--space-md);
+    border-bottom: var(--rule-hair) solid var(--color-rule);
+  }
+  @media (min-width: 40rem) {
+    .spec__row {
+      grid-template-columns: minmax(0, 13rem) minmax(0, 1fr);
+    }
+  }
+  dt {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-xs);
+    font-family: var(--font-display);
+    font-size: var(--text-md);
+    font-weight: 700;
+    color: var(--color-brand);
+  }
+  .spec__tag {
+    font-family: var(--font-body);
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  dd {
     margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  @media (min-width: 640px) {
-    .cards {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (min-width: 1080px) {
-    .cards {
-      grid-template-columns: repeat(4, 1fr);
-    }
-  }
-  .card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1.75rem;
-    border-radius: var(--radius);
-    background: #fff;
-    border: 1px solid var(--line);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-  }
-  .card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow);
-  }
-  .card__top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 0.5rem;
-  }
-  .card__icon {
-    display: grid;
-    place-items: center;
-    width: 54px;
-    height: 54px;
-    border-radius: 14px;
-    background: var(--gradient);
-    color: #fff;
-  }
-  .card p {
-    color: var(--muted);
-    font-size: 0.97rem;
+    color: var(--color-ink-2);
   }
 </style>

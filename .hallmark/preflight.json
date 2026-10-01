@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-01",
+  "framework": "Astro 7 (static, i18n en/fr) — astro.config.mjs",
+  "fonts_before": "Libre Caslon Text + Montserrat (@fontsource) — replaced: Montserrat is on Hallmark's banned-defaults list",
+  "fonts_after": "Fraunces Variable (display) + IBM Plex Sans (body) via @fontsource",
+  "palette_preserved": "logo navy #0F2A5C and teal #2BA59B, re-expressed as OKLCH tokens in tokens.css",
+  "motion": "no motion library — motion-cut project",
+  "spacing": "4 pt named scale introduced in tokens.css",
+  "design_md": "none"
+}

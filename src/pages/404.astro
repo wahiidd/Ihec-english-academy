@@ -9,42 +9,38 @@ const fr = t('fr').notFound;
 
 <Base lang="en" title={`${en.title} — IHEC English Academy`} alternates={false} noindex>
   <Header lang="en" onHome={false} />
-  <main class="not-found">
-    <img src="/images/emblem.png" alt="" width="240" height="192" />
-    <p class="code">404</p>
+  <main class="wrap not-found">
+    <p class="code tnum" aria-hidden="true">404</p>
     <h1>{en.title}</h1>
     <p>{en.text}</p>
     <p lang="fr" class="fr">{fr.title} — {fr.text}</p>
-    <div class="actions">
-      <a class="btn btn--primary" href="/">{en.back}</a>
-      <a class="btn btn--ghost" href="/fr/" lang="fr">{fr.back}</a>
-    </div>
+    <p class="actions">
+      <a class="link" href="/">{en.back} <span aria-hidden="true">→</span></a>
+      <a class="link" href="/fr/" lang="fr">{fr.back} <span aria-hidden="true">→</span></a>
+    </p>
   </main>
 </Base>
 
 <style>
   .not-found {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    min-height: calc(100vh - var(--header-h));
-    padding: 4rem var(--gutter);
-    text-align: center;
-    justify-content: center;
-    background: var(--bg-soft);
-  }
-  img {
-    width: 110px;
+    display: grid;
+    justify-items: start;
+    gap: var(--space-md);
+    padding-block: var(--space-3xl) var(--space-4xl);
   }
   .code {
-    font-weight: 700;
-    letter-spacing: 0.2em;
-    color: var(--teal-ink);
+    font-family: var(--font-display);
+    font-size: var(--text-numeral);
+    font-weight: 300;
+    line-height: 1;
+    color: var(--color-accent);
+  }
+  h1 {
+    font-size: var(--text-3xl);
   }
   p {
-    color: var(--muted);
-    max-width: 34rem;
+    max-width: var(--measure);
+    color: var(--color-ink-2);
   }
   .fr {
     font-style: italic;
@@ -52,8 +48,7 @@ const fr = t('fr').notFound;
   .actions {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.75rem;
-    margin-top: 1rem;
+    gap: var(--space-md) var(--space-xl);
+    margin-top: var(--space-md);
   }
 </style>

@@ -1,4 +1,7 @@
 ---
+/* Stage IV · Certify — closing stage; the British Council partnership as a single hairline proof band (T2, text wordmark).
+   Replace the text wordmark with the official logo only once its use is authorised. */
+import Stage from './Stage.astro';
 import { t, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -6,71 +9,44 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const dict = t(lang).partner;
+const dict = t(lang);
+const c = dict.certify;
 ---
 
-<section class="partner" aria-labelledby="partner-title">
-  <div class="container partner__inner">
-    <div class="partner__text">
-      <p class="kicker">{dict.kicker}</p>
-      <h2 id="partner-title">{dict.title}</h2>
-      <p>{dict.text}</p>
-    </div>
-    <!-- Text placeholder: replace with the official British Council logo once usage is authorised. -->
-    <div class="partner__mark" aria-hidden="true">
-      <span class="partner__x">IHEC English Academy</span>
-      <span class="partner__plus">×</span>
-      <span class="partner__name">{dict.name}</span>
-    </div>
-  </div>
-</section>
+<Stage id="certify" numeral={dict.stages.certify.numeral} name={dict.stages.certify.name} title={c.title} stageLabel={dict.stages.stage}>
+  <p class="lead">{c.text}</p>
+  <figure class="partner">
+    <p class="partner__label">{c.partnerLabel}</p>
+    <p class="partner__name">{c.partnerName}</p>
+    <figcaption>{c.partnerText}</figcaption>
+  </figure>
+</Stage>
 
 <style>
+  .lead {
+    font-size: var(--text-md);
+    line-height: 1.5;
+  }
   .partner {
-    padding-block: clamp(3rem, 7vw, 5rem);
-    border-block: 1px solid var(--line);
-  }
-  .partner__inner {
     display: grid;
-    gap: 2rem 4rem;
-    align-items: center;
+    gap: var(--space-2xs);
+    margin: var(--space-xl) 0 0;
+    padding-block: var(--space-lg);
+    border-block: var(--rule-hair) solid var(--color-ink);
   }
-  @media (min-width: 900px) {
-    .partner__inner {
-      grid-template-columns: 1.3fr 0.7fr;
-    }
-  }
-  .partner__text p:not(.kicker) {
-    margin-top: 1rem;
-    max-width: 40rem;
-    color: var(--muted);
-    font-size: 1.05rem;
-  }
-  .partner__mark {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 2rem 1.5rem;
-    border-radius: var(--radius);
-    border: 1px dashed var(--line);
-    text-align: center;
-  }
-  .partner__x {
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-  .partner__plus {
-    font-size: 1.4rem;
-    color: var(--teal-ink);
+  .partner__label {
+    font-size: var(--text-sm);
+    color: var(--color-muted);
   }
   .partner__name {
-    font-family: var(--font-serif);
-    font-size: 1.7rem;
+    font-family: var(--font-display);
+    font-size: var(--text-2xl);
     font-weight: 700;
-    color: var(--navy);
+    line-height: 1.1;
+    color: var(--color-brand);
+  }
+  figcaption {
+    font-size: var(--text-sm);
+    color: var(--color-ink-2);
   }
 </style>

@@ -5,11 +5,9 @@ import { t, type Lang } from '../i18n/utils';
 
 interface Props {
   lang: Lang;
-  /** "light" for navy backgrounds. */
-  tone?: 'dark' | 'light';
 }
 
-const { lang, tone = 'dark' } = Astro.props;
+const { lang } = Astro.props;
 const dict = t(lang);
 
 const labels: Record<SocialNetwork, string> = {
@@ -22,7 +20,7 @@ const labels: Record<SocialNetwork, string> = {
 const networks = Object.keys(labels) as SocialNetwork[];
 ---
 
-<ul class:list={['socials', `socials--${tone}`]}>
+<ul class="socials">
   {
     networks.map((network) => {
       const url = site.socials[network];
@@ -52,43 +50,29 @@ const networks = Object.keys(labels) as SocialNetwork[];
   .socials {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
     margin: 0;
     padding: 0;
     list-style: none;
+    border-left: var(--rule-hair) solid var(--color-night-rule);
+  }
+  li {
+    border-right: var(--rule-hair) solid var(--color-night-rule);
   }
   a,
   .soon {
     display: grid;
     place-items: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    width: 48px;
+    height: 48px;
+    color: var(--color-on-night);
+    transition: background-color var(--dur-micro) var(--ease-out), color var(--dur-micro) var(--ease-out);
   }
-  .socials--dark a,
-  .socials--dark .soon {
-    background: #fff;
-    color: var(--navy);
-    border: 1px solid var(--line);
-  }
-  .socials--dark a:hover {
-    background: var(--navy);
-    color: #fff;
-    transform: translateY(-2px);
-  }
-  .socials--light a,
-  .socials--light .soon {
-    background: rgb(255 255 255 / 0.1);
-    color: #fff;
-  }
-  .socials--light a:hover {
-    background: #fff;
-    color: var(--navy);
-    transform: translateY(-2px);
+  a:hover {
+    background: var(--color-on-night);
+    color: var(--color-night);
   }
   .soon {
-    opacity: 0.7;
+    color: var(--color-on-night-muted);
     cursor: default;
   }
 </style>

@@ -1,0 +1,82 @@
+/* Hallmark · tokens · theme: custom · vibe: "academic broadsheet, navy ink, teal rule"
+ * axes: light / roman-serif / chromatic-teal ~186°
+ * Every colour and font on the site references one of these tokens.
+ */
+:root {
+  color-scheme: light;
+
+  /* Paper — cool-tinted toward the logo navy */
+  --color-paper: oklch(97% 0.008 240);
+  --color-paper-2: oklch(94% 0.012 240);
+
+  /* Ink */
+  --color-ink: oklch(22% 0.035 262);
+  --color-ink-2: oklch(36% 0.03 260);
+  --color-muted: oklch(46% 0.025 258);
+  --color-brand: oklch(29.7% 0.096 261); /* logo navy #0F2A5C — display + wordmark */
+
+  /* Rules */
+  --color-rule: oklch(82% 0.014 250);
+  --color-rule-2: oklch(89% 0.01 245);
+
+  /* Accent — logo teal, darkened to pass AA as text */
+  --color-accent: oklch(49% 0.1 186);
+  --color-focus: oklch(52% 0.14 186);
+
+  /* Inverted band (footer) */
+  --color-night: oklch(24% 0.07 262);
+  --color-night-rule: oklch(38% 0.05 262);
+  --color-on-night: oklch(96% 0.008 240);
+  --color-on-night-muted: oklch(80% 0.03 245);
+  --color-accent-on-night: oklch(80% 0.09 186);
+
+  /* Type */
+  --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+  --font-body: 'IBM Plex Sans', 'Segoe UI', Roboto, sans-serif;
+
+  --text-xs: 0.8rem;
+  --text-sm: 0.9rem;
+  --text-base: 1.0625rem;
+  --text-md: 1.25rem;
+  --text-lg: 1.5625rem;
+  --text-xl: 1.9531rem;
+  --text-2xl: 2.4414rem;
+  --text-3xl: clamp(2.2rem, 3vw + 1rem, 3.0518rem);
+  --text-display: clamp(2.75rem, 5vw + 1rem, 5.25rem);
+  --text-numeral: clamp(3.5rem, 6vw + 1rem, 6rem);
+
+  /* Space — 4 pt scale */
+  --space-3xs: 0.125rem;
+  --space-2xs: 0.25rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+  --space-4xl: 9rem;
+
+  --page-gutter: clamp(1rem, 4vw, 3rem);
+  --page-max: 76rem;
+  --measure: 62ch;
+
+  /* Rules & radii */
+  --rule-hair: 1px;
+  --rule-thick: 3px;
+  --radius-input: 2px;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+
+  /* Layers */
+  --z-base: 1;
+  --z-raised: 10;
+  --z-sticky: 200;
+  --z-modal: 400;
+}
