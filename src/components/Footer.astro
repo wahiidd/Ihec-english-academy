@@ -1,0 +1,177 @@
+---
+import Icon from './Icon.astro';
+import SocialIcons from './SocialIcons.astro';
+import { site } from '../config/site';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="footer" id="contact">
+  <div class="container">
+    <div class="contact">
+      <div class="contact__intro">
+        <p class="kicker">{dict.contact.kicker}</p>
+        <h2>{dict.contact.title}</h2>
+        <p>{dict.contact.text}</p>
+      </div>
+
+      <dl class="contact__list">
+        <div>
+          <dt><Icon name="mail" size={20} /> {dict.contact.emailLabel}</dt>
+          <dd>
+            {site.email ? <a href={`mailto:${site.email}`}>{site.email}</a> : <span class="muted">{dict.contact.emailSoon}</span>}
+          </dd>
+        </div>
+        <div>
+          <dt><Icon name="pin" size={20} /> {dict.contact.locationLabel}</dt>
+          <dd>{dict.contact.location}</dd>
+        </div>
+        <div>
+          <dt class="visually-hidden">{dict.contact.socialLabel}</dt>
+          <dd>
+            <p class="contact__social-label">{dict.contact.socialLabel}</p>
+            <SocialIcons lang={lang} tone="light" />
+          </dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="footer__bottom">
+      <div class="footer__brand">
+        <img src="/images/emblem-white.png" alt="" width="240" height="192" loading="lazy" />
+        <div>
+          <p class="footer__name">IHEC English Academy</p>
+          <p class="footer__tagline">{dict.footer.tagline}</p>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <p>{dict.footer.supervision}</p>
+        <p>© {year} IHEC English Academy. {dict.footer.rights}</p>
+      </div>
+      <a class="to-top" href="#top">
+        <Icon name="arrowUp" size={18} />
+        <span>{dict.footer.backToTop}</span>
+      </a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    background: var(--navy);
+    background-image: radial-gradient(40rem 24rem at 100% 0%, rgb(58 155 213 / 0.18), transparent 70%);
+    color: var(--on-navy-muted);
+    padding-top: clamp(4rem, 9vw, 6rem);
+  }
+  .footer h2 {
+    color: #fff;
+  }
+  .footer .kicker {
+    color: var(--teal-light);
+  }
+  .footer a {
+    color: #fff;
+  }
+
+  .contact {
+    display: grid;
+    gap: 2.5rem 4rem;
+    padding-bottom: clamp(3rem, 7vw, 4.5rem);
+  }
+  @media (min-width: 900px) {
+    .contact {
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+    }
+  }
+  .contact__intro p:not(.kicker) {
+    margin-top: 1rem;
+    font-size: 1.05rem;
+  }
+  .contact__list {
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+  }
+  .contact__list dt {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+  }
+  .contact__list dd {
+    margin: 0.3rem 0 0;
+    font-size: 1.1rem;
+    color: #fff;
+  }
+  .contact__list .muted {
+    color: var(--on-navy-muted);
+  }
+  .contact__social-label {
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+  }
+
+  .footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem 2rem;
+    padding-block: 2rem;
+    border-top: 1px solid rgb(255 255 255 / 0.14);
+    font-size: 0.88rem;
+  }
+  .footer__brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .footer__brand img {
+    width: 56px;
+    height: auto;
+  }
+  .footer__name {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: #fff;
+  }
+  .footer__tagline {
+    font-style: italic;
+    color: var(--teal-light);
+  }
+  .footer__legal {
+    display: grid;
+    gap: 0.2rem;
+  }
+  .to-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 44px;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgb(255 255 255 / 0.25);
+    text-decoration: none;
+    font-weight: 500;
+  }
+  .to-top:hover {
+    background: #fff;
+    color: var(--navy);
+  }
+</style>

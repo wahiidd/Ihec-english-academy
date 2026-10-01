@@ -1,0 +1,142 @@
+---
+import Icon from './Icon.astro';
+import { events } from '../data/events';
+import { t, formatDate, launchDateLabel, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).events;
+const upcoming = events
+  .filter((e) => Date.parse(e.date) >= Date.now())
+  .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+---
+
+<section class="section section--soft" id="events">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">{dict.kicker}</p>
+      <h2>{dict.title}</h2>
+    </div>
+
+    {
+      upcoming.length > 0 ? (
+        <ul class="events">
+          {upcoming.map((event) => (
+            <li class="event" data-event-date={event.date}>
+              <div class="event__date">
+                <span class="event__day">{formatDate(event.date, lang, { month: undefined, year: undefined })}</span>
+                <span class="event__month">{formatDate(event.date, lang, { day: undefined, month: 'short' })}</span>
+              </div>
+              <div class="event__body">
+                <span class="badge">{dict.formats[event.format]}</span>
+                <h3>{event.title[lang]}</h3>
+                {event.description && <p>{event.description[lang]}</p>}
+                <p class="event__meta">
+                  {formatDate(event.date, lang, { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
+                  {event.place && <> · {event.place[lang]}</>}
+                </p>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <div class="empty">
+          <span class="empty__icon">
+            <Icon name="calendar" size={28} />
+          </span>
+          <p>{dict.empty.replace('{date}', launchDateLabel(lang))}</p>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<script>
+  // Hide events that have passed since the last build.
+  document.querySelectorAll<HTMLElement>('[data-event-date]').forEach((el) => {
+    if (Date.parse(el.dataset.eventDate ?? '') < Date.now()) el.hidden = true;
+  });
+</script>
+
+<style>
+  .empty {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    max-width: 760px;
+    padding: 1.75rem;
+    border-radius: var(--radius);
+    border: 1px dashed #c3d2e1;
+    background: #fff;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .empty__icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgb(58 155 213 / 0.12);
+    color: var(--blue-ink);
+  }
+
+  .events {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .event {
+    display: flex;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+  .event[hidden] {
+    display: none;
+  }
+  .event__date {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 76px;
+    height: 76px;
+    border-radius: 14px;
+    background: var(--navy);
+    color: #fff;
+    line-height: 1.1;
+  }
+  .event__day {
+    font-family: var(--font-serif);
+    font-size: 1.7rem;
+    font-weight: 700;
+  }
+  .event__month {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--teal-light);
+  }
+  .event__body {
+    display: grid;
+    gap: 0.4rem;
+    justify-items: start;
+  }
+  .event__body p {
+    color: var(--muted);
+  }
+  .event__meta {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+</style>

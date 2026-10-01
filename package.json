@@ -1,0 +1,16 @@
+{
+  "name": "ihec-english-academy",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@fontsource/libre-caslon-text": "^5.3.0",
+    "@fontsource/montserrat": "^5.3.0",
+    "astro": "^7.3.5"
+  }
+}

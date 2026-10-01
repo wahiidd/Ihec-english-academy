@@ -1,0 +1,161 @@
+export const en = {
+  meta: {
+    title: 'IHEC English Academy — Communicate · Lead · Succeed',
+    description:
+      'The English academy of IHEC Carthage: courses, hybrid workshops, debates and training sessions to improve your English and prepare for IELTS and other international certifications.',
+    ogAlt: 'IHEC Carthage English Academy logo',
+  },
+  nav: {
+    about: 'About',
+    activities: 'Activities',
+    ielts: 'IELTS',
+    membership: 'Membership',
+    team: 'Team',
+    events: 'Events',
+    contact: 'Contact',
+    menu: 'Menu',
+    skip: 'Skip to content',
+    home: 'IHEC English Academy — home',
+    switchLabel: 'Version française',
+    switchShort: 'FR',
+  },
+  hero: {
+    eyebrow: 'IHEC Carthage',
+    titleStart: 'Your English,',
+    titleAccent: 'ready for the world.',
+    lead:
+      'The English academy of IHEC Carthage: courses, workshops, debates and training sessions to improve your English and prepare for IELTS and other international certifications.',
+    ctaPrimary: 'Join the academy',
+    ctaSecondary: 'Explore our activities',
+    launchBefore: 'Launching on',
+    launchAfter: 'Open since',
+    countdownLabel: 'Starts in',
+    units: { d: 'd', h: 'h', m: 'min' },
+    logoAlt: 'IHEC Carthage English Academy — Communicate, Lead, Succeed',
+  },
+  about: {
+    kicker: 'About us',
+    title: 'An academy built for IHEC students',
+    paragraphs: [
+      'IHEC English Academy gives IHEC Carthage students a place to practise, improve and certify their English. Throughout the academic year, it offers courses, workshops, debates and training sessions built around the skills that matter at university, in international exams and in professional life.',
+      'Placed under the supervision of IHEC Carthage, the academy is led by Mrs. Dorra Bechaouch, English Teacher and Business Communication Trainer, together with a team of student ambassadors.',
+    ],
+    facts: {
+      launch: 'Launch',
+      supervision: 'Supervision',
+      supervisionValue: 'IHEC Carthage',
+      focus: 'Main focus',
+      focusValue: 'IELTS',
+    },
+    pillars: [
+      { title: 'Communicate', text: 'Express your ideas clearly and confidently, in speaking and in writing.' },
+      { title: 'Lead', text: 'Take the floor in debates, workshops and team projects, in English.' },
+      { title: 'Succeed', text: 'Reach the level you need for your studies, your certifications and your career.' },
+    ],
+  },
+  activities: {
+    kicker: 'What we offer',
+    title: 'Learn by doing, all year long',
+    intro:
+      'Activities run throughout the academic year and are announced as they are scheduled. Follow us so you never miss a session.',
+    hybrid: 'Hybrid',
+    items: {
+      courses: {
+        title: 'Courses',
+        text: 'Structured English training to strengthen grammar, vocabulary and fluency, with a focus on academic and business English.',
+      },
+      workshops: {
+        title: 'Workshops',
+        text: 'Hands-on sessions on one specific skill (presentations, writing, pronunciation, job interviews and more), on campus or online.',
+      },
+      debates: {
+        title: 'Debates',
+        text: 'Structured debates on current topics to sharpen your arguments, your spontaneity and your confidence in front of an audience.',
+      },
+      training: {
+        title: 'Training sessions',
+        text: 'Targeted preparation for placement tests and international certifications, with practice in exam conditions and feedback on your progress.',
+      },
+    },
+  },
+  ielts: {
+    kicker: 'Certifications',
+    title: 'Our main focus: IELTS',
+    lead:
+      'IELTS is one of the most widely recognised English tests for studying, working and living abroad. Our training sessions prepare you for all four parts of the exam.',
+    skills: [
+      { title: 'Listening', text: 'Follow recordings, different accents and key details.' },
+      { title: 'Reading', text: 'Read efficiently and find information under time pressure.' },
+      { title: 'Writing', text: 'Produce clear, well-structured and well-argued texts.' },
+      { title: 'Speaking', text: 'Speak fluently and coherently in a face-to-face interview.' },
+    ],
+    beyondTitle: 'Beyond IELTS',
+    beyondText:
+      'The academy also prepares you for placement tests and other international certifications, and above all helps you raise your overall level of English.',
+    tags: ['Placement tests', 'TOEIC', 'TOEFL', 'Cambridge English'],
+  },
+  membership: {
+    kicker: 'Membership',
+    title: 'Join the academy',
+    lead: 'Membership is reserved for IHEC Carthage students.',
+    currency: 'TND',
+    period: 'per year',
+    includesTitle: 'Your membership includes',
+    includes: [
+      'Access to the academy’s courses, workshops, debates and training sessions',
+      'Preparation for IELTS and placement tests',
+      'Workshops on campus and online (hybrid)',
+      'A community of motivated IHEC students',
+    ],
+    cta: 'Register now',
+    soon: 'Registration opens soon',
+    soonNote: 'Registration details will be announced on our social media.',
+  },
+  partner: {
+    kicker: 'Partnership',
+    title: 'In partnership with the British Council',
+    text: 'IHEC English Academy works in partnership with the British Council, the United Kingdom’s international organisation for cultural relations and educational opportunities.',
+    name: 'British Council',
+  },
+  team: {
+    kicker: 'Our team',
+    title: 'The people behind the academy',
+    directorRole: 'Director',
+    directorName: 'Mrs. Dorra Bechaouch',
+    directorTitle: 'English Teacher & Business Communication Trainer',
+    ambassadorsTitle: 'Student ambassadors',
+    ambassadorsText:
+      'Our ambassadors are IHEC students who help run the activities and support members. Their profiles will be published soon.',
+    comingSoon: 'Coming soon',
+  },
+  events: {
+    kicker: 'Events',
+    title: 'Upcoming events',
+    empty: 'The first events will be announced soon, starting with the launch of the academy on {date}.',
+    formats: { onsite: 'On campus', online: 'Online', hybrid: 'Hybrid' },
+  },
+  contact: {
+    kicker: 'Contact',
+    title: 'Stay in touch',
+    text: 'Follow us on social media for announcements, events and registration dates.',
+    emailLabel: 'Email',
+    emailSoon: 'Coming soon',
+    locationLabel: 'Location',
+    location: 'IHEC Carthage, Tunisia',
+    socialLabel: 'Follow us',
+    socialSoon: 'link coming soon',
+  },
+  footer: {
+    tagline: 'Communicate • Lead • Succeed',
+    supervision: 'Under the supervision of IHEC Carthage',
+    rights: 'All rights reserved.',
+    backToTop: 'Back to top',
+  },
+  notFound: {
+    title: 'Page not found',
+    text: 'The page you are looking for does not exist or has been moved.',
+    back: 'Back to home',
+  },
+};
+
+export type Dict = typeof en;

@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from './Header.astro';
+import Hero from './Hero.astro';
+import About from './About.astro';
+import Activities from './Activities.astro';
+import Certifications from './Certifications.astro';
+import Membership from './Membership.astro';
+import Partner from './Partner.astro';
+import Team from './Team.astro';
+import Events from './Events.astro';
+import Footer from './Footer.astro';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<Base lang={lang}>
+  <a class="skip-link" href="#main">{t(lang).nav.skip}</a>
+  <Header lang={lang} />
+  <main id="main">
+    <Hero lang={lang} />
+    <About lang={lang} />
+    <Activities lang={lang} />
+    <Certifications lang={lang} />
+    <Membership lang={lang} />
+    <Partner lang={lang} />
+    <Team lang={lang} />
+    <Events lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Base>

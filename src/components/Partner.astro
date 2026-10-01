@@ -1,0 +1,76 @@
+---
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).partner;
+---
+
+<section class="partner" aria-labelledby="partner-title">
+  <div class="container partner__inner">
+    <div class="partner__text">
+      <p class="kicker">{dict.kicker}</p>
+      <h2 id="partner-title">{dict.title}</h2>
+      <p>{dict.text}</p>
+    </div>
+    <!-- Text placeholder: replace with the official British Council logo once usage is authorised. -->
+    <div class="partner__mark" aria-hidden="true">
+      <span class="partner__x">IHEC English Academy</span>
+      <span class="partner__plus">×</span>
+      <span class="partner__name">{dict.name}</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  .partner {
+    padding-block: clamp(3rem, 7vw, 5rem);
+    border-block: 1px solid var(--line);
+  }
+  .partner__inner {
+    display: grid;
+    gap: 2rem 4rem;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .partner__inner {
+      grid-template-columns: 1.3fr 0.7fr;
+    }
+  }
+  .partner__text p:not(.kicker) {
+    margin-top: 1rem;
+    max-width: 40rem;
+    color: var(--muted);
+    font-size: 1.05rem;
+  }
+  .partner__mark {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 2rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px dashed var(--line);
+    text-align: center;
+  }
+  .partner__x {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .partner__plus {
+    font-size: 1.4rem;
+    color: var(--teal-ink);
+  }
+  .partner__name {
+    font-family: var(--font-serif);
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+</style>

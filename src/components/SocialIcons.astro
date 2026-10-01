@@ -1,0 +1,94 @@
+---
+import Icon from './Icon.astro';
+import { site, type SocialNetwork } from '../config/site';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  /** "light" for navy backgrounds. */
+  tone?: 'dark' | 'light';
+}
+
+const { lang, tone = 'dark' } = Astro.props;
+const dict = t(lang);
+
+const labels: Record<SocialNetwork, string> = {
+  instagram: 'Instagram',
+  facebook: 'Facebook',
+  linkedin: 'LinkedIn',
+  tiktok: 'TikTok',
+  youtube: 'YouTube',
+};
+const networks = Object.keys(labels) as SocialNetwork[];
+---
+
+<ul class:list={['socials', `socials--${tone}`]}>
+  {
+    networks.map((network) => {
+      const url = site.socials[network];
+      return (
+        <li>
+          {url ? (
+            <a href={url} target="_blank" rel="noopener noreferrer" aria-label={labels[network]} title={labels[network]}>
+              <Icon name={network} size={20} />
+            </a>
+          ) : (
+            <span
+              class="soon"
+              role="img"
+              aria-label={`${labels[network]} (${dict.contact.socialSoon})`}
+              title={`${labels[network]} — ${dict.contact.socialSoon}`}
+            >
+              <Icon name={network} size={20} />
+            </span>
+          )}
+        </li>
+      );
+    })
+  }
+</ul>
+
+<style>
+  .socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  a,
+  .soon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  }
+  .socials--dark a,
+  .socials--dark .soon {
+    background: #fff;
+    color: var(--navy);
+    border: 1px solid var(--line);
+  }
+  .socials--dark a:hover {
+    background: var(--navy);
+    color: #fff;
+    transform: translateY(-2px);
+  }
+  .socials--light a,
+  .socials--light .soon {
+    background: rgb(255 255 255 / 0.1);
+    color: #fff;
+  }
+  .socials--light a:hover {
+    background: #fff;
+    color: var(--navy);
+    transform: translateY(-2px);
+  }
+  .soon {
+    opacity: 0.7;
+    cursor: default;
+  }
+</style>

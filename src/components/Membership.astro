@@ -1,0 +1,154 @@
+---
+import Icon from './Icon.astro';
+import { site } from '../config/site';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).membership;
+---
+
+<section class="section section--soft" id="membership">
+  <div class="container">
+    <div class="membership">
+      <div class="membership__info">
+        <p class="kicker">{dict.kicker}</p>
+        <h2>{dict.title}</h2>
+        <p class="membership__lead">{dict.lead}</p>
+        <h3>{dict.includesTitle}</h3>
+        <ul class="includes">
+          {
+            dict.includes.map((item) => (
+              <li>
+                <Icon name="check" size={20} />
+                <span>{item}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="price-card">
+        <img src="/images/emblem-white.png" alt="" width="240" height="192" class="price-card__emblem" loading="lazy" />
+        <p class="price">
+          <span class="price__amount">{site.membershipFee}</span>
+          <span class="price__currency">{dict.currency}</span>
+        </p>
+        <p class="price__period">{dict.period}</p>
+        {
+          site.joinUrl ? (
+            <a class="btn btn--light" href={site.joinUrl} target="_blank" rel="noopener noreferrer">
+              {dict.cta}
+            </a>
+          ) : (
+            <>
+              <span class="btn btn--light" aria-disabled="true">
+                {dict.soon}
+              </span>
+              <p class="price__note">{dict.soonNote}</p>
+            </>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .membership {
+    display: grid;
+    gap: 2.5rem 4rem;
+    align-items: center;
+  }
+  @media (min-width: 900px) {
+    .membership {
+      grid-template-columns: 1.2fr 0.8fr;
+    }
+  }
+  .membership__lead {
+    margin: 1rem 0 2rem;
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+  .membership h3 {
+    margin-bottom: 1rem;
+  }
+  .includes {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .includes li {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  .includes :global(svg) {
+    flex-shrink: 0;
+    margin-top: 2px;
+    padding: 3px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgb(43 165 155 / 0.14);
+    color: var(--teal-ink);
+  }
+
+  .price-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: clamp(2.5rem, 5vw, 3.5rem) 2rem;
+    border-radius: var(--radius-lg);
+    background: var(--navy);
+    background-image: radial-gradient(28rem 18rem at 100% 0%, rgb(58 155 213 / 0.35), transparent 70%),
+      radial-gradient(22rem 16rem at 0% 100%, rgb(43 165 155 / 0.3), transparent 70%);
+    color: #fff;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgb(15 42 92 / 0.25);
+  }
+  .price-card__emblem {
+    position: absolute;
+    right: -30px;
+    bottom: -30px;
+    width: 200px;
+    opacity: 0.08;
+    pointer-events: none;
+  }
+  .price {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0;
+    font-family: var(--font-serif);
+  }
+  .price__amount {
+    font-size: clamp(4rem, 10vw, 5.5rem);
+    font-weight: 700;
+    line-height: 1;
+  }
+  .price__currency {
+    font-size: 1.6rem;
+    color: var(--teal-light);
+  }
+  .price__period {
+    margin: 0.5rem 0 2rem;
+    font-size: 1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--on-navy-muted);
+  }
+  .price__note {
+    margin-top: 1rem;
+    max-width: 22rem;
+    font-size: 0.9rem;
+    color: var(--on-navy-muted);
+  }
+</style>

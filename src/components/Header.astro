@@ -1,0 +1,283 @@
+---
+import Icon from './Icon.astro';
+import { t, homePath, otherLang, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  /** On pages without the home sections (404), nav links point to the home page. */
+  onHome?: boolean;
+}
+
+const { lang, onHome = true } = Astro.props;
+const dict = t(lang);
+const other = otherLang(lang);
+const base = onHome ? '' : homePath(lang);
+
+const links = [
+  ['about', dict.nav.about],
+  ['activities', dict.nav.activities],
+  ['ielts', dict.nav.ielts],
+  ['membership', dict.nav.membership],
+  ['team', dict.nav.team],
+  ['events', dict.nav.events],
+  ['contact', dict.nav.contact],
+] as const;
+---
+
+<header class="header" data-header>
+  <div class="container header__inner">
+    <a class="brand" href={homePath(lang)} aria-label={dict.nav.home}>
+      <picture>
+        <source srcset="/images/emblem.webp" type="image/webp" />
+        <img src="/images/emblem.png" alt="" width="55" height="44" />
+      </picture>
+      <span class="brand__text">
+        <span class="brand__ihec">IHEC Carthage</span>
+        <span class="brand__name">English <span>Academy</span></span>
+      </span>
+    </a>
+
+    <nav class="nav" id="site-nav" aria-label={dict.nav.menu} data-nav>
+      <ul>
+        {links.map(([id, label]) => <li><a href={`${base}#${id}`}>{label}</a></li>)}
+      </ul>
+    </nav>
+
+    <div class="header__actions">
+      <a
+        class="lang-switch"
+        href={homePath(other)}
+        hreflang={other}
+        lang={other}
+        aria-label={dict.nav.switchLabel}
+        title={dict.nav.switchLabel}
+        data-lang-switch
+      >
+        <Icon name="globe" size={18} />
+        <span>{dict.nav.switchShort}</span>
+      </a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav" data-menu-toggle>
+        <span class="visually-hidden">{dict.nav.menu}</span>
+        <Icon name="menu" class="icon-open" />
+        <Icon name="close" class="icon-close" />
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const toggle = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+
+  const setOpen = (open: boolean) => {
+    toggle?.setAttribute('aria-expanded', String(open));
+    header?.classList.toggle('is-open', open);
+    document.body.style.overflow = open ? 'hidden' : '';
+  };
+
+  toggle?.addEventListener('click', () => setOpen(toggle.getAttribute('aria-expanded') !== 'true'));
+  nav?.addEventListener('click', (e) => {
+    if ((e.target as HTMLElement).closest('a')) setOpen(false);
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && header?.classList.contains('is-open')) {
+      setOpen(false);
+      toggle?.focus();
+    }
+  });
+  window.matchMedia('(min-width: 1080px)').addEventListener('change', (e) => e.matches && setOpen(false));
+
+  const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // Keep the current section when switching language.
+  document.querySelector<HTMLAnchorElement>('[data-lang-switch]')?.addEventListener('click', (e) => {
+    const link = e.currentTarget as HTMLAnchorElement;
+    if (location.hash) link.href = link.pathname + location.hash;
+  });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--header-h);
+    background: rgb(255 255 255 / 0.85);
+    backdrop-filter: saturate(1.4) blur(12px);
+    -webkit-backdrop-filter: saturate(1.4) blur(12px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .header.is-scrolled {
+    border-bottom-color: var(--line);
+    box-shadow: 0 4px 20px rgb(15 42 92 / 0.06);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    height: 100%;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .brand img {
+    width: auto;
+    height: 40px;
+  }
+  .brand__text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+  }
+  .brand__ihec {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--navy);
+  }
+  .brand__name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--navy);
+  }
+  .brand__name span {
+    color: var(--teal-ink);
+  }
+
+  .nav ul {
+    display: flex;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .nav a {
+    display: block;
+    padding: 0.5rem 0.7rem;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nav a:hover {
+    color: var(--navy);
+    background: var(--bg-soft);
+  }
+
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    min-height: 40px;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--navy);
+    text-decoration: none;
+    background: #fff;
+  }
+  .lang-switch:hover {
+    border-color: var(--navy);
+  }
+
+  .menu-toggle {
+    display: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: #fff;
+    color: var(--navy);
+    cursor: pointer;
+  }
+  .menu-toggle :global(.icon-close) {
+    display: none;
+  }
+  .is-open .menu-toggle :global(.icon-open) {
+    display: none;
+  }
+  .is-open .menu-toggle :global(.icon-close) {
+    display: block;
+  }
+
+  @media (max-width: 1079px) {
+    .menu-toggle {
+      display: grid;
+    }
+    .nav {
+      position: fixed;
+      inset: var(--header-h) 0 0 0;
+      padding: 1.5rem var(--gutter) 2rem;
+      background: #fff;
+      border-top: 1px solid var(--line);
+      overflow-y: auto;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-8px);
+      transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s;
+    }
+    .is-open .nav {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+    }
+    .nav ul {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .nav a {
+      padding: 0.9rem 0.5rem;
+      font-size: 1.15rem;
+      border-bottom: 1px solid var(--line);
+      border-radius: 0;
+    }
+  }
+
+  @media (max-width: 479px) {
+    .header__inner {
+      gap: 0.5rem;
+    }
+    .brand {
+      gap: 0.5rem;
+    }
+    .brand img {
+      height: 34px;
+    }
+    .brand__ihec {
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+    }
+    .brand__name {
+      font-size: 0.9rem;
+      letter-spacing: 0;
+    }
+    .lang-switch {
+      padding-inline: 0.65rem;
+    }
+    .lang-switch :global(svg) {
+      display: none;
+    }
+  }
+</style>

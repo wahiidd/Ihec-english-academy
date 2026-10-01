@@ -1,0 +1,133 @@
+---
+import { t, launchDateLabel, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).about;
+const facts = [
+  [dict.facts.launch, launchDateLabel(lang)],
+  [dict.facts.supervision, dict.facts.supervisionValue],
+  [dict.facts.focus, dict.facts.focusValue],
+];
+---
+
+<section class="section" id="about">
+  <div class="container">
+    <div class="about">
+      <div>
+        <p class="kicker">{dict.kicker}</p>
+        <h2>{dict.title}</h2>
+      </div>
+      <div class="about__body">
+        {dict.paragraphs.map((p) => <p>{p}</p>)}
+        <dl class="facts">
+          {
+            facts.map(([label, value]) => (
+              <div>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+    </div>
+
+    <ol class="pillars">
+      {
+        dict.pillars.map((pillar, i) => (
+          <li class="pillar">
+            <span class="pillar__num" aria-hidden="true">0{i + 1}</span>
+            <h3>{pillar.title}</h3>
+            <p>{pillar.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .about {
+    display: grid;
+    gap: 1.5rem 4rem;
+  }
+  @media (min-width: 900px) {
+    .about {
+      grid-template-columns: 0.85fr 1.15fr;
+    }
+  }
+  .about__body {
+    display: grid;
+    gap: 1.1rem;
+    font-size: 1.05rem;
+    color: var(--muted);
+  }
+
+  .facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    margin: 0.75rem 0 0;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .facts dt {
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-ink);
+  }
+  .facts dd {
+    margin: 0.2rem 0 0;
+    font-family: var(--font-serif);
+    font-size: 1.2rem;
+    color: var(--navy);
+  }
+
+  .pillars {
+    display: grid;
+    gap: 1.25rem;
+    margin: clamp(3rem, 6vw, 4.5rem) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 760px) {
+    .pillars {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+  .pillar {
+    position: relative;
+    padding: 2rem 1.75rem;
+    border-radius: var(--radius);
+    background: var(--bg-soft);
+    overflow: hidden;
+  }
+  .pillar::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 4px;
+    background: var(--gradient);
+  }
+  .pillar__num {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    color: var(--blue-ink);
+  }
+  .pillar h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .pillar p {
+    color: var(--muted);
+  }
+</style>
