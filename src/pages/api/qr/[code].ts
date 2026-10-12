@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ params, url, site, request }) => {
   const png = await qrPng(checkInUrl(site ?? new URL(request.url), code), 800);
   const headers: Record<string, string> = {
     'Content-Type': 'image/png',
-    'Cache-Control': 'private, max-age=86400',
+    'Cache-Control': 'public, max-age=31536000, immutable',
   };
   if (url.searchParams.has('download')) {
     headers['Content-Disposition'] = `attachment; filename="ihec-english-academy-ticket.png"`;

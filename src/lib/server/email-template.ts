@@ -3,7 +3,7 @@ import { formatDate, type Lang } from '../../i18n/utils';
 
 const copy = {
   en: {
-    subject: (title: string) => `Your ticket — ${title}`,
+    subject: (title: string, no: string) => `Your ticket — ${title} · No. ${no}`,
     preheader: (title: string) => `Your place is confirmed. Show your QR code at the entrance of ${title}.`,
     badge: 'Registration confirmed',
     hello: (name: string) => `Hello ${name},`,
@@ -12,21 +12,25 @@ const copy = {
     time: 'Time',
     place: 'Place',
     qrHelp: 'Show this QR code at the entrance — on your phone or printed. Your PDF ticket is attached to this e-mail.',
-    download: 'Download my ticket',
+    download: 'Download my ticket (PDF)',
+    fallback: 'QR code not showing?',
+    openOnline: 'Open my ticket online',
     cancel: 'Can’t make it anymore? Just reply to this e-mail so we can free your seat for someone else.',
     ticketNo: 'Ticket',
   },
   fr: {
-    subject: (title: string) => `Votre billet — ${title}`,
+    subject: (title: string, no: string) => `Votre billet — ${title} · N° ${no}`,
     preheader: (title: string) => `Votre place est confirmée. Présentez votre QR code à l’entrée de : ${title}.`,
     badge: 'Inscription confirmée',
     hello: (name: string) => `Bonjour ${name},`,
-    intro: 'Votre place est réservée. Voici votre billet pour :',
+    intro: 'Votre place est réservée. Voici votre billet pour\u00a0:',
     date: 'Date',
     time: 'Heure',
     place: 'Lieu',
     qrHelp: 'Présentez ce QR code à l’entrée — sur votre téléphone ou imprimé. Votre billet PDF est joint à cet e-mail.',
-    download: 'Télécharger mon billet',
+    download: 'Télécharger mon billet (PDF)',
+    fallback: 'Le QR code ne s’affiche pas ?',
+    openOnline: 'Ouvrir mon billet en ligne',
     cancel: 'Vous ne pouvez plus venir ? Répondez simplement à cet e-mail pour libérer votre place.',
     ticketNo: 'Billet',
   },
@@ -42,8 +46,9 @@ export interface TicketEmail {
   code: string;
   event: AcademyEvent;
   ticketUrl: string;
+  pdfUrl: string;
   logoUrl: string;
-  qrCid: string;
+  qrUrl: string;
 }
 
 export const ticketEmail = (m: TicketEmail) => {
@@ -67,7 +72,8 @@ export const ticketEmail = (m: TicketEmail) => {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light only">
-<title>${escape(c.subject(title))}</title>
+<meta name="supported-color-schemes" content="light only">
+<title>${escape(c.subject(title, shortCode))}</title>
 </head>
 <body style="margin:0;padding:0;background:#F3F7FA;">
 <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${escape(c.preheader(title))}</div>
@@ -94,14 +100,19 @@ export const ticketEmail = (m: TicketEmail) => {
       <tr><td align="center" style="padding:24px 32px 8px;">
         <table role="presentation" cellpadding="0" cellspacing="0" style="background:#F3F7FA;border-radius:16px;">
           <tr><td align="center" style="padding:20px 20px 12px;">
-            <img src="cid:${m.qrCid}" width="220" height="220" alt="QR code" style="display:block;width:220px;height:220px;border:0;border-radius:8px;">
+            <a href="${m.ticketUrl}" style="text-decoration:none;"><img src="${m.qrUrl}" width="220" height="220" alt="QR code — ${c.ticketNo} ${shortCode}" style="display:block;width:220px;height:220px;border:0;border-radius:8px;background:#FFFFFF;"></a>
           </td></tr>
           <tr><td align="center" style="padding:0 20px 18px;font:600 13px/1.4 'Courier New',monospace;color:#4A5872;letter-spacing:.12em;">${c.ticketNo} ${shortCode}</td></tr>
         </table>
         <p style="margin:14px 0 0;font:400 14px/1.5 Arial,Helvetica,sans-serif;color:#4A5872;">${c.qrHelp}</p>
+        <p style="margin:8px 0 0;font:400 13px/1.5 Arial,Helvetica,sans-serif;color:#4A5872;">${c.fallback} <a href="${m.ticketUrl}" style="color:#1F6FAE;text-decoration:underline;">${c.openOnline}</a></p>
       </td></tr>
       <tr><td align="center" style="padding:20px 32px 28px;">
-        <a href="${m.ticketUrl}" style="display:inline-block;padding:14px 28px;border-radius:999px;background:#0F2A5C;color:#FFFFFF;text-decoration:none;font:700 15px/1 Arial,Helvetica,sans-serif;">${c.download}</a>
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 auto;">
+          <tr><td align="center" bgcolor="#0F2A5C" style="border-radius:999px;background:#0F2A5C;">
+            <a href="${m.pdfUrl}" target="_blank" style="display:inline-block;padding:14px 28px;border:2px solid #0F2A5C;border-radius:999px;background:#0F2A5C;color:#FFFFFF;text-decoration:none;font:700 15px/1.2 Arial,Helvetica,sans-serif;mso-padding-alt:0;">${c.download}</a>
+          </td></tr>
+        </table>
       </td></tr>
       <tr><td style="padding:18px 32px;border-top:1px solid #DCE5EE;background:#FAFCFD;">
         <p style="margin:0;font:400 13px/1.55 Arial,Helvetica,sans-serif;color:#4A5872;">${c.cancel}</p>
@@ -127,7 +138,8 @@ export const ticketEmail = (m: TicketEmail) => {
     '',
     `${c.ticketNo} ${shortCode}`,
     c.qrHelp,
-    `${c.download}: ${m.ticketUrl}`,
+    `${c.download}: ${m.pdfUrl}`,
+    `${c.openOnline}: ${m.ticketUrl}`,
     '',
     c.cancel,
     '',
@@ -136,5 +148,5 @@ export const ticketEmail = (m: TicketEmail) => {
     .filter((l, i, a) => !(l === '' && a[i - 1] === ''))
     .join('\n');
 
-  return { subject: c.subject(title), html, text };
+  return { subject: c.subject(title, shortCode), html, text };
 };

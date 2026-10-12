@@ -4,7 +4,7 @@ import type { AcademyEvent } from '../../data/events';
 import type { Lang } from '../../i18n/utils';
 import { ticketEmail } from './email-template';
 import { buildTicketPdf, ticketFileName } from './ticket-file';
-import { checkInUrl, qrPng, ticketUrl } from './tickets';
+import { ticketUrl } from './tickets';
 
 let transport: nodemailer.Transporter | undefined;
 
@@ -29,8 +29,6 @@ export const sendTicket = async (p: {
   code: string;
   event: AcademyEvent;
 }) => {
-  const qrCid = `qr-${p.code}@ihec-english-academy`;
-  const png = await qrPng(checkInUrl(p.site, p.code));
   const { subject, html, text } = ticketEmail({
     lang: p.lang,
     firstName: p.firstName,
@@ -38,8 +36,10 @@ export const sendTicket = async (p: {
     code: p.code,
     event: p.event,
     ticketUrl: ticketUrl(p.site, p.code),
+    pdfUrl: new URL(`/api/ticket/${p.code}`, p.site).href,
     logoUrl: new URL('/images/logo-full.png', p.site).href,
-    qrCid,
+    // Hosted image rather than an inline (cid) attachment: shown by every client, incl. Gmail apps.
+    qrUrl: new URL(`/api/qr/${p.code}`, p.site).href,
   });
   const pdf = await buildTicketPdf(p);
 
@@ -49,8 +49,9 @@ export const sendTicket = async (p: {
     subject,
     html,
     text,
+    // Each ticket is its own conversation: stops Gmail from threading them and hiding repeated content.
+    headers: { 'X-Entity-Ref-ID': p.code },
     attachments: [
-      { filename: 'qr.png', content: png, cid: qrCid, contentType: 'image/png', contentDisposition: 'inline' },
       { filename: ticketFileName(p.event, p.lang), content: Buffer.from(pdf), contentType: 'application/pdf' },
     ],
   });
