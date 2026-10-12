@@ -21,6 +21,8 @@ export interface SheetRow {
   email: string;
   phone: string;
   level: string;
+  /** Stored value (L1…M2 or "Autre : …"), used by the edit form. */
+  levelRaw: string;
   createdAt: string;
   checkedInAt: string | null;
 }
@@ -32,6 +34,7 @@ const toRow = (r: Registration): SheetRow => ({
   email: r.email,
   phone: r.phone,
   level: levelLabel(r.study_level),
+  levelRaw: r.study_level,
   createdAt: r.created_at.toISOString(),
   checkedInAt: r.checked_in_at?.toISOString() ?? null,
 });

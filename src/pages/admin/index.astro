@@ -128,6 +128,43 @@ const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
           <p class="no-results" data-empty hidden>Aucun résultat.</p>
         </div>
 
+        <dialog class="edit" data-edit-dialog aria-labelledby="edit-title">
+          <form class="edit__form" data-edit-form novalidate>
+            <header class="edit__head">
+              <h2 id="edit-title">Modifier l’inscription</h2>
+              <button type="button" class="edit__x" data-edit-close aria-label="Fermer">✕</button>
+            </header>
+            <input type="hidden" name="code" />
+            <div class="edit__row">
+              <label>Prénom<input name="firstName" required maxlength="60" /></label>
+              <label>Nom<input name="lastName" required maxlength="60" /></label>
+            </div>
+            <label>E-mail<input name="email" type="email" required maxlength="254" /></label>
+            <label>Téléphone<input name="phone" type="tel" required maxlength="30" /></label>
+            <div class="edit__row">
+              <label>Niveau
+                <select name="level">
+                  <option value="L1">1re année licence</option>
+                  <option value="L2">2e année licence</option>
+                  <option value="L3">3e année licence</option>
+                  <option value="M1">1re année master</option>
+                  <option value="M2">2e année master</option>
+                  <option value="other">Autre</option>
+                </select>
+              </label>
+              <label data-other-wrap>Précisez<input name="levelOther" maxlength="60" /></label>
+            </div>
+            <label class="edit__check"><input type="checkbox" name="resend" /> Renvoyer le billet par e-mail</label>
+            <p class="edit__error" data-edit-error role="alert" hidden></p>
+            <footer class="edit__foot">
+              <button type="button" class="btn btn--ghost" data-edit-close>Annuler</button>
+              <button class="btn btn--primary" data-edit-save>Enregistrer</button>
+            </footer>
+          </form>
+        </dialog>
+
+        <p class="toast" data-toast role="status" hidden></p>
+
         <script type="application/json" data-initial set:html={json(initial)} />
       </div>
     )
@@ -142,6 +179,7 @@ const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     email: string;
     phone: string;
     level: string;
+    levelRaw: string;
     createdAt: string;
     checkedInAt: string | null;
   };
@@ -227,12 +265,20 @@ const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
           status.append(
             r.checkedInAt ? el('span', 'pill pill--ok', `✓ Validé · ${time.format(new Date(r.checkedInAt)).slice(0, 5)}`) : el('span', 'pill', 'En attente'),
           );
-          const action = el('td');
+          const action = el('td', 'actions');
           const btn = el('button', 'row-btn', r.checkedInAt ? 'Annuler' : 'Valider');
           btn.type = 'button';
           btn.dataset.code = r.code;
           btn.dataset.undo = r.checkedInAt ? '1' : '';
-          action.append(btn);
+          const edit = el('button', 'icon-btn', '✎');
+          edit.type = 'button';
+          edit.dataset.edit = r.code;
+          edit.title = edit.ariaLabel = `Modifier ${r.firstName} ${r.lastName}`;
+          const del = el('button', 'icon-btn icon-btn--danger', '🗑');
+          del.type = 'button';
+          del.dataset.delete = r.code;
+          del.title = del.ariaLabel = `Supprimer ${r.firstName} ${r.lastName}`;
+          action.append(btn, edit, del);
           tr.append(status, action);
           return tr;
         }),
@@ -278,8 +324,97 @@ const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
         render();
       }),
     );
+    const toast = root.querySelector<HTMLElement>('[data-toast]')!;
+    let toastTimer = 0;
+    const notify = (msg: string) => {
+      toast.textContent = msg;
+      toast.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => (toast.hidden = true), 4000);
+    };
+
+    const dialog = root.querySelector<HTMLDialogElement>('[data-edit-dialog]')!;
+    const form = root.querySelector<HTMLFormElement>('[data-edit-form]')!;
+    const errorBox = root.querySelector<HTMLElement>('[data-edit-error]')!;
+    const otherWrap = root.querySelector<HTMLElement>('[data-other-wrap]')!;
+    const field = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+    const syncOther = () => (otherWrap.hidden = field('level').value !== 'other');
+    field('level').addEventListener('change', syncOther);
+    root.querySelectorAll('[data-edit-close]').forEach((b) => b.addEventListener('click', () => dialog.close()));
+
+    const openEdit = (r: Row) => {
+      form.reset();
+      errorBox.hidden = true;
+      field('code').value = r.code;
+      field('firstName').value = r.firstName;
+      field('lastName').value = r.lastName;
+      field('email').value = r.email;
+      field('phone').value = r.phone;
+      const known = ['L1', 'L2', 'L3', 'M1', 'M2'].includes(r.levelRaw);
+      field('level').value = known ? r.levelRaw : 'other';
+      field('levelOther').value = known ? '' : r.levelRaw.replace(/^Autre\s*:\s*/, '');
+      syncOther();
+      dialog.showModal();
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const save = form.querySelector<HTMLButtonElement>('[data-edit-save]')!;
+      save.disabled = true;
+      errorBox.hidden = true;
+      const body = Object.fromEntries(new FormData(form)) as Record<string, unknown>;
+      body.resend = field('resend').checked;
+      try {
+        const res = await fetch('/api/admin/registration', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        const r = await res.json();
+        if (r.status === 'ok') {
+          dialog.close();
+          notify(r.emailSent === true ? 'Inscription modifiée · billet renvoyé.' : r.emailSent === false ? 'Inscription modifiée, mais l’e-mail n’a pas pu être envoyé.' : 'Inscription modifiée.');
+          await load();
+        } else {
+          const labels: Record<string, string> = { firstName: 'prénom', lastName: 'nom', email: 'e-mail', phone: 'téléphone', level: 'niveau' };
+          errorBox.textContent = r.duplicate
+            ? 'Cette adresse e-mail est déjà inscrite à cet événement.'
+            : r.fields
+              ? `Vérifiez : ${Object.keys(r.fields).map((k) => labels[k]).join(', ')}.`
+              : 'La modification n’a pas pu être enregistrée.';
+          errorBox.hidden = false;
+        }
+      } catch {
+        errorBox.textContent = 'Erreur réseau — réessayez.';
+        errorBox.hidden = false;
+      } finally {
+        save.disabled = false;
+      }
+    });
+
     tbody.addEventListener('click', async (e) => {
-      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.row-btn');
+      const target = e.target as HTMLElement;
+      const editBtn = target.closest<HTMLButtonElement>('[data-edit]');
+      if (editBtn) {
+        const r = data.rows.find((x) => x.code === editBtn.dataset.edit);
+        if (r) openEdit(r);
+        return;
+      }
+      const delBtn = target.closest<HTMLButtonElement>('[data-delete]');
+      if (delBtn) {
+        const r = data.rows.find((x) => x.code === delBtn.dataset.delete);
+        if (!r || !confirm(`Supprimer définitivement l’inscription de ${r.firstName} ${r.lastName} ?\nSa place sera libérée et son QR code ne sera plus valide.`)) return;
+        delBtn.disabled = true;
+        const res = await fetch('/api/admin/registration', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: r.code }),
+        });
+        notify(res.ok ? `Inscription de ${r.firstName} ${r.lastName} supprimée.` : 'La suppression a échoué.');
+        await load();
+        return;
+      }
+      const btn = target.closest<HTMLButtonElement>('.row-btn');
       if (!btn) return;
       const undo = btn.dataset.undo === '1';
       if (undo && !confirm('Annuler la validation de cette présence ?')) return;
@@ -632,6 +767,125 @@ const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
     opacity: 0.5;
     cursor: progress;
   }
+  .actions {
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+  }
+  .icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--navy);
+    font-size: 0.95rem;
+    cursor: pointer;
+  }
+  .icon-btn:hover {
+    border-color: var(--navy);
+  }
+  .icon-btn--danger:hover {
+    border-color: #b42318;
+    background: #fdecea;
+  }
+  .icon-btn:disabled {
+    opacity: 0.5;
+  }
+
+  .edit {
+    width: min(100% - 2rem, 520px);
+    padding: 0;
+    border: 0;
+    border-radius: 18px;
+    box-shadow: 0 30px 80px rgb(15 42 92 / 0.3);
+  }
+  .edit::backdrop {
+    background: rgb(10 29 64 / 0.5);
+  }
+  .edit__form {
+    display: grid;
+    gap: 0.9rem;
+    padding: 1.5rem;
+  }
+  .edit__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .edit__head h2 {
+    font-size: 1.35rem;
+  }
+  .edit__x {
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+  }
+  .edit__row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 0.9rem;
+  }
+  .edit label {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .edit label[hidden] {
+    display: none;
+  }
+  .edit input:not([type='checkbox']),
+  .edit select {
+    min-height: 44px;
+    padding: 0 0.8rem;
+    border: 1px solid #c3d2e1;
+    border-radius: 10px;
+    background: #fff;
+    font: 500 0.95rem var(--font-sans);
+    color: var(--ink);
+  }
+  .edit .edit__check {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+  }
+  .edit__error {
+    padding: 0.6rem 0.9rem;
+    border-radius: 10px;
+    background: #fdecea;
+    color: #8a1c13;
+    font-size: 0.9rem;
+  }
+  .edit__foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+  }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    z-index: 400;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.25rem;
+    border-radius: 999px;
+    background: var(--navy);
+    color: #fff;
+    font-weight: 600;
+    box-shadow: var(--shadow);
+  }
+  .toast[hidden] {
+    display: none;
+  }
+
   .no-results {
     padding: 2rem;
     text-align: center;

@@ -79,3 +79,22 @@ export const undoCheckIn = async (code: string) => {
     update registrations set checked_in_at = null where ticket_code = ${code} returning *`;
   return row;
 };
+
+export const updateRegistration = async (
+  code: string,
+  f: { firstName: string; lastName: string; email: string; phone: string; level: string },
+) => {
+  const [row] = await db()<Registration[]>`
+    update registrations
+    set first_name = ${f.firstName}, last_name = ${f.lastName}, email = ${f.email},
+        phone = ${f.phone}, study_level = ${f.level}
+    where ticket_code = ${code}
+    returning *`;
+  return row;
+};
+
+/** Deleting a registration frees its seat (capacity is computed from the remaining rows). */
+export const deleteRegistration = async (code: string) => {
+  const [row] = await db()<Registration[]>`delete from registrations where ticket_code = ${code} returning *`;
+  return row;
+};
