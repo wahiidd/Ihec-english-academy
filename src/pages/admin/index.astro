@@ -1,8 +1,8 @@
 ---
 import AdminShell from '../../components/AdminShell.astro';
-import { events, levelLabel } from '../../data/events';
 import { adminConfigured, isAdmin } from '../../lib/server/auth';
-import { countsByEvent, listRegistrations, type Registration } from '../../lib/server/db';
+import { countsByEvent } from '../../lib/server/db';
+import { adminEvents, sheet, type Sheet } from '../../lib/server/admin-data';
 import { formatDate } from '../../i18n/utils';
 
 export const prerender = false;
@@ -10,27 +10,21 @@ Astro.response.headers.set('Cache-Control', 'no-store');
 
 const loggedIn = isAdmin(Astro.cookies);
 const error = Astro.url.searchParams.has('error');
-const registrable = events.filter((e) => e.registration);
+const list = adminEvents();
+const current = list.find((e) => e.slug === Astro.url.searchParams.get('event')) ?? list[0];
 
-let data: { event: (typeof registrable)[number]; rows: Registration[]; taken: number; present: number }[] = [];
+let initial: Sheet | undefined;
+let counts = new Map<string, { taken: number; checked_in: number }>();
 let dbError = false;
-if (loggedIn) {
+if (loggedIn && current) {
   try {
-    const counts = await countsByEvent();
-    data = await Promise.all(
-      registrable.map(async (event) => ({
-        event,
-        rows: await listRegistrations(event.slug),
-        taken: counts.get(event.slug)?.taken ?? 0,
-        present: counts.get(event.slug)?.checked_in ?? 0,
-      })),
-    );
+    [initial, counts] = await Promise.all([sheet(current), countsByEvent()]);
   } catch (err) {
     console.error('admin: database error', err);
     dbError = true;
   }
 }
-const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Africa/Tunis' });
+const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
 ---
 
 <AdminShell title={loggedIn ? 'Inscriptions' : 'Connexion'} loggedIn={loggedIn}>
@@ -49,69 +43,264 @@ const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'sh
       </form>
     ) : dbError ? (
       <p class="warn">Impossible de joindre la base de données. Vérifiez DATABASE_URL.</p>
+    ) : !current || !initial ? (
+      <p class="empty-state">Aucun événement avec inscriptions pour l’instant.</p>
     ) : (
-      data.map(({ event, rows, taken, present }) => {
-        const capacity = event.registration!.capacity;
-        return (
-          <section class="panel">
-            <header class="panel__head">
-              <div>
-                <h1>{event.title.fr}</h1>
-                <p>
-                  {formatDate(event.date, 'fr', { weekday: 'long', hour: '2-digit', minute: '2-digit' })} · {event.place?.fr}
-                </p>
-              </div>
-              <div class="panel__actions">
-                <a class="btn btn--primary" href="/admin/scan">Scanner les billets</a>
-                <a class="btn btn--ghost" href={`/api/admin/export?event=${event.slug}`}>Exporter (CSV)</a>
-              </div>
-            </header>
+      <div class="sheet" data-sheet>
+        <nav class="tabs" aria-label="Événements">
+          {list.map((e) => (
+            <a
+              class:list={['tab', e.slug === current.slug && 'is-active', Date.parse(e.date) < Date.now() - 86_400_000 && 'is-past']}
+              href={`/admin?event=${e.slug}`}
+              aria-current={e.slug === current.slug ? 'page' : undefined}
+            >
+              <span class="tab__title">{e.title.fr}</span>
+              <span class="tab__meta">
+                {formatDate(e.date, 'fr', { day: 'numeric', month: 'short' })} · {counts.get(e.slug)?.taken ?? 0} inscrits
+              </span>
+            </a>
+          ))}
+        </nav>
 
-            <dl class="stats">
-              <div><dt>Inscrits</dt><dd>{taken}<small> / {capacity}</small></dd></div>
-              <div><dt>Places restantes</dt><dd>{Math.max(capacity - taken, 0)}</dd></div>
-              <div><dt>Présents</dt><dd>{present}<small> / {taken}</small></dd></div>
-            </dl>
+        <header class="sheet__head">
+          <div>
+            <h1>{current.title.fr}</h1>
+            <p>
+              {formatDate(current.date, 'fr', { weekday: 'long', ...(current.showTime === false ? {} : { hour: '2-digit', minute: '2-digit' }) })}
+              {current.place && <> · {current.place.fr}</>}
+            </p>
+          </div>
+          <p class="live" data-live>
+            <span class="live__dot" aria-hidden="true" />
+            <span data-live-label>En direct</span>
+          </p>
+        </header>
 
-            <input class="search" type="search" placeholder="Rechercher un nom, un e-mail…" data-search aria-label="Rechercher" />
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr><th>Nom</th><th>Niveau</th><th>E-mail</th><th>Téléphone</th><th>Inscrit le</th><th>Présence</th></tr>
-                </thead>
-                <tbody>
-                  {rows.length === 0 && <tr><td colspan="6" class="empty">Aucune inscription pour l’instant.</td></tr>}
-                  {rows.map((r) => (
-                    <tr data-row>
-                      <td><strong>{r.first_name} {r.last_name}</strong></td>
-                      <td>{levelLabel(r.study_level)}</td>
-                      <td><a href={`mailto:${r.email}`}>{r.email}</a></td>
-                      <td><a href={`tel:${r.phone.replace(/\s/g, '')}`}>{r.phone}</a></td>
-                      <td>{dt.format(r.created_at)}</td>
-                      <td>{r.checked_in_at ? <span class="pill pill--ok">✓ {dt.format(r.checked_in_at)}</span> : <span class="pill">—</span>}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        );
-      })
+        <dl class="stats">
+          <div>
+            <dt>Inscrits</dt>
+            <dd><span data-stat="registered" /><small> / {current.registration!.capacity}</small></dd>
+          </div>
+          <div class="stats--ok">
+            <dt>Validés</dt>
+            <dd><span data-stat="present" /><small data-stat="presentPct" /></dd>
+            <div class="bar" aria-hidden="true"><span data-bar /></div>
+          </div>
+          <div>
+            <dt>En attente</dt>
+            <dd data-stat="pending" />
+          </div>
+          <div>
+            <dt>Places restantes</dt>
+            <dd data-stat="remaining" />
+          </div>
+        </dl>
+
+        <div class="toolbar">
+          <input class="search" type="search" placeholder="Rechercher un nom, un e-mail, un téléphone…" aria-label="Rechercher" data-search />
+          <div class="filters" role="group" aria-label="Filtrer">
+            <button type="button" data-filter="all" aria-pressed="true">Tous <span data-count="all" /></button>
+            <button type="button" data-filter="present" aria-pressed="false">Validés <span data-count="present" /></button>
+            <button type="button" data-filter="pending" aria-pressed="false">En attente <span data-count="pending" /></button>
+          </div>
+          <div class="exports">
+            <a class="btn btn--primary" href={`/api/admin/export?event=${current.slug}`}>Excel — cet événement</a>
+            {list.length > 1 && <a class="btn btn--ghost" href="/api/admin/export?event=all">Excel — tous</a>}
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="num">N°</th>
+                <th><button type="button" data-sort="name">Nom</button></th>
+                <th>Niveau</th>
+                <th>E-mail</th>
+                <th>Téléphone</th>
+                <th><button type="button" data-sort="createdAt" aria-sort="ascending">Inscrit le</button></th>
+                <th><button type="button" data-sort="status">Statut</button></th>
+                <th class="sr">Action</th>
+              </tr>
+            </thead>
+            <tbody data-rows />
+          </table>
+          <p class="no-results" data-empty hidden>Aucun résultat.</p>
+        </div>
+
+        <script type="application/json" data-initial set:html={json(initial)} />
+      </div>
     )
   }
 </AdminShell>
 
 <script>
-  document.querySelectorAll<HTMLInputElement>('[data-search]').forEach((input) => {
-    const rows = [...input.closest('section')!.querySelectorAll<HTMLElement>('[data-row]')];
-    input.addEventListener('input', () => {
-      const q = input.value.trim().toLowerCase();
-      rows.forEach((r) => (r.hidden = !!q && !r.textContent!.toLowerCase().includes(q)));
+  type Row = {
+    code: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string;
+    level: string;
+    createdAt: string;
+    checkedInAt: string | null;
+  };
+  type Sheet = {
+    event: { slug: string; capacity: number };
+    stats: { registered: number; present: number; pending: number; remaining: number };
+    rows: Row[];
+  };
+
+  const root = document.querySelector<HTMLElement>('[data-sheet]');
+  if (root) {
+    let data: Sheet = JSON.parse(root.querySelector('[data-initial]')!.textContent!);
+    let query = '';
+    let filter: 'all' | 'present' | 'pending' = 'all';
+    let sort: { key: 'name' | 'createdAt' | 'status'; dir: 1 | -1 } = { key: 'createdAt', dir: 1 };
+    const flash = new Set<string>();
+
+    const tbody = root.querySelector<HTMLElement>('[data-rows]')!;
+    const empty = root.querySelector<HTMLElement>('[data-empty]')!;
+    const liveLabel = root.querySelector<HTMLElement>('[data-live-label]')!;
+    const live = root.querySelector<HTMLElement>('[data-live]')!;
+    const fmt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Africa/Tunis' });
+    const time = new Intl.DateTimeFormat('fr-FR', { timeStyle: 'medium', timeZone: 'Africa/Tunis' });
+    const norm = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
+
+    const el = <K extends keyof HTMLElementTagNameMap>(tag: K, cls?: string, text?: string) => {
+      const e = document.createElement(tag);
+      if (cls) e.className = cls;
+      if (text !== undefined) e.textContent = text;
+      return e;
+    };
+
+    const renderStats = () => {
+      const s = data.stats;
+      const set = (k: string, v: string) => root.querySelectorAll(`[data-stat="${k}"]`).forEach((n) => (n.textContent = v));
+      set('registered', String(s.registered));
+      set('present', String(s.present));
+      set('presentPct', s.registered ? ` · ${Math.round((s.present / s.registered) * 100)} %` : '');
+      set('pending', String(s.pending));
+      set('remaining', String(s.remaining));
+      root.querySelector<HTMLElement>('[data-bar]')!.style.transform = `scaleX(${s.registered ? s.present / s.registered : 0})`;
+      root.querySelector('[data-count="all"]')!.textContent = String(s.registered);
+      root.querySelector('[data-count="present"]')!.textContent = String(s.present);
+      root.querySelector('[data-count="pending"]')!.textContent = String(s.pending);
+    };
+
+    const render = () => {
+      renderStats();
+      const q = norm(query.trim());
+      // Number rows by registration order, independently of sorting and filters.
+      const order = new Map([...data.rows].sort((a, b) => a.createdAt.localeCompare(b.createdAt)).map((r, i) => [r.code, i + 1]));
+      const rows = data.rows
+        .filter((r) => (filter === 'all' ? true : filter === 'present' ? r.checkedInAt : !r.checkedInAt))
+        .filter((r) => !q || norm(`${r.firstName} ${r.lastName} ${r.email} ${r.phone} ${r.level}`).includes(q))
+        .sort((a, b) => {
+          const v =
+            sort.key === 'name'
+              ? `${a.lastName} ${a.firstName}`.localeCompare(`${b.lastName} ${b.firstName}`, 'fr')
+              : sort.key === 'status'
+                ? (b.checkedInAt ?? '').localeCompare(a.checkedInAt ?? '')
+                : a.createdAt.localeCompare(b.createdAt);
+          return v * sort.dir;
+        });
+
+      tbody.replaceChildren(
+        ...rows.map((r) => {
+          const tr = el('tr');
+          if (flash.has(r.code)) tr.classList.add('flash');
+          tr.append(el('td', 'num', String(order.get(r.code))));
+          const name = el('td');
+          name.append(el('strong', '', `${r.firstName} ${r.lastName}`));
+          tr.append(name, el('td', '', r.level));
+          const mail = el('td');
+          const a = el('a', '', r.email);
+          a.href = `mailto:${r.email}`;
+          mail.append(a);
+          const phone = el('td');
+          const t = el('a', '', r.phone);
+          t.href = `tel:${r.phone.replace(/\s/g, '')}`;
+          phone.append(t);
+          tr.append(mail, phone, el('td', '', fmt.format(new Date(r.createdAt))));
+          const status = el('td');
+          status.append(
+            r.checkedInAt ? el('span', 'pill pill--ok', `✓ Validé · ${time.format(new Date(r.checkedInAt)).slice(0, 5)}`) : el('span', 'pill', 'En attente'),
+          );
+          const action = el('td');
+          const btn = el('button', 'row-btn', r.checkedInAt ? 'Annuler' : 'Valider');
+          btn.type = 'button';
+          btn.dataset.code = r.code;
+          btn.dataset.undo = r.checkedInAt ? '1' : '';
+          action.append(btn);
+          tr.append(status, action);
+          return tr;
+        }),
+      );
+      empty.hidden = rows.length > 0;
+      flash.clear();
+    };
+
+    const load = async () => {
+      try {
+        const res = await fetch(`/api/admin/registrations?event=${data.event.slug}`, { cache: 'no-store' });
+        if (res.status === 401) return location.assign(`/admin?next=${encodeURIComponent(location.pathname + location.search)}`);
+        const next: Sheet = await res.json();
+        const before = new Map(data.rows.map((r) => [r.code, r.checkedInAt]));
+        for (const r of next.rows) if (!before.has(r.code) || before.get(r.code) !== r.checkedInAt) flash.add(r.code);
+        data = next;
+        render();
+        live.classList.remove('is-off');
+        liveLabel.textContent = `En direct · ${time.format(new Date())}`;
+      } catch {
+        live.classList.add('is-off');
+        liveLabel.textContent = 'Connexion perdue — nouvelle tentative…';
+      }
+    };
+
+    root.querySelector<HTMLInputElement>('[data-search]')!.addEventListener('input', (e) => {
+      query = (e.target as HTMLInputElement).value;
+      render();
     });
-  });
+    root.querySelectorAll<HTMLButtonElement>('[data-filter]').forEach((b) =>
+      b.addEventListener('click', () => {
+        filter = b.dataset.filter as typeof filter;
+        root.querySelectorAll('[data-filter]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        render();
+      }),
+    );
+    root.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const key = b.dataset.sort as typeof sort.key;
+        sort = { key, dir: sort.key === key ? (-sort.dir as 1 | -1) : 1 };
+        root.querySelectorAll('[data-sort]').forEach((x) => x.removeAttribute('aria-sort'));
+        b.setAttribute('aria-sort', sort.dir === 1 ? 'ascending' : 'descending');
+        render();
+      }),
+    );
+    tbody.addEventListener('click', async (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('.row-btn');
+      if (!btn) return;
+      const undo = btn.dataset.undo === '1';
+      if (undo && !confirm('Annuler la validation de cette présence ?')) return;
+      btn.disabled = true;
+      await fetch('/api/admin/checkin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: btn.dataset.code, undo }),
+      });
+      await load();
+    });
+
+    render();
+    // Live updates: refresh every 4 s while the tab is visible, right away when it comes back.
+    setInterval(() => !document.hidden && load(), 4000);
+    document.addEventListener('visibilitychange', () => !document.hidden && load());
+  }
 </script>
 
-<style>
+<!-- Global: table rows are rendered client-side, so scoped styles would not reach them. Only loaded on /admin. -->
+<style is:global>
   .login {
     display: grid;
     gap: 1rem;
@@ -133,11 +322,12 @@ const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'sh
   }
   input[type='password'],
   .search {
-    min-height: 48px;
+    min-height: 46px;
     padding: 0 0.9rem;
     border: 1px solid #c3d2e1;
     border-radius: 10px;
-    font: 500 1rem var(--font-sans);
+    background: #fff;
+    font: 500 0.95rem var(--font-sans);
   }
   .warn {
     padding: 0.75rem 1rem;
@@ -146,43 +336,119 @@ const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'sh
     color: #8a1c13;
     font-weight: 500;
   }
+  .empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--muted);
+  }
 
-  .panel {
+  .sheet {
     display: grid;
     gap: 1.25rem;
   }
-  .panel__head {
+
+  .tabs {
+    display: flex;
+    gap: 0.25rem;
+    overflow-x: auto;
+    border-bottom: 2px solid var(--line);
+    scrollbar-width: thin;
+  }
+  .tab {
+    display: grid;
+    gap: 0.1rem;
+    flex-shrink: 0;
+    padding: 0.7rem 1rem;
+    margin-bottom: -2px;
+    border-bottom: 3px solid transparent;
+    border-radius: 10px 10px 0 0;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .tab:hover {
+    background: var(--bg-soft);
+    color: var(--navy);
+  }
+  .tab.is-active {
+    border-bottom-color: var(--navy);
+    background: #fff;
+    color: var(--navy);
+  }
+  .tab.is-past {
+    opacity: 0.7;
+  }
+  .tab__title {
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .tab__meta {
+    font-size: 0.8rem;
+    white-space: nowrap;
+  }
+
+  .sheet__head {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
     align-items: flex-end;
-    gap: 1rem;
+    gap: 0.75rem;
   }
-  .panel__head h1 {
+  .sheet__head h1 {
     font-size: 1.8rem;
   }
-  .panel__head p {
+  .sheet__head p {
     color: var(--muted);
   }
-  .panel__actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
+  .live {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    background: rgb(43 165 155 / 0.12);
+    color: var(--teal-ink);
+    font-size: 0.85rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
   }
+  .live__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: pulse 2s ease-out infinite;
+  }
+  .live.is-off {
+    background: #fdecea;
+    color: #8a1c13;
+  }
+  .live.is-off .live__dot {
+    animation: none;
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgb(26 122 114 / 0.6);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 7px rgb(26 122 114 / 0);
+    }
+  }
+
   .stats {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 0.75rem;
     margin: 0;
   }
-  .stats div {
+  .stats > div {
     padding: 1rem 1.25rem;
     border-radius: 14px;
     background: #fff;
     border: 1px solid var(--line);
   }
   .stats dt {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
@@ -197,9 +463,76 @@ const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'sh
     font-variant-numeric: tabular-nums;
   }
   .stats small {
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--muted);
   }
+  .stats--ok dd {
+    color: var(--teal-ink);
+  }
+  .bar {
+    height: 6px;
+    margin-top: 0.5rem;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .bar span {
+    display: block;
+    height: 100%;
+    background: var(--teal);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .search {
+    flex: 1 1 260px;
+  }
+  .filters {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: 10px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+  }
+  .filters button {
+    min-height: 38px;
+    padding: 0 0.8rem;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    color: var(--muted);
+    font: 600 0.88rem var(--font-sans);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .filters button[aria-pressed='true'] {
+    background: #fff;
+    color: var(--navy);
+    box-shadow: 0 1px 3px rgb(15 42 92 / 0.12);
+  }
+  .filters span {
+    margin-left: 0.2rem;
+    font-variant-numeric: tabular-nums;
+    opacity: 0.75;
+  }
+  .exports {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .exports .btn {
+    min-height: 44px;
+    padding: 0.5rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
   .table-wrap {
     overflow-x: auto;
     border: 1px solid var(--line);
@@ -209,33 +542,69 @@ const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'sh
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.92rem;
+    font-size: 0.9rem;
   }
   th,
   td {
-    padding: 0.75rem 1rem;
+    padding: 0.7rem 0.9rem;
     text-align: left;
     border-bottom: 1px solid var(--line);
     white-space: nowrap;
   }
-  th {
-    font-size: 0.78rem;
+  thead th {
+    position: sticky;
+    top: 0;
+    font-size: 0.75rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--muted);
     background: var(--bg-soft);
   }
-  tr[hidden] {
-    display: none;
+  th button {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
   }
-  .empty {
-    text-align: center;
+  th button::after {
+    content: ' ↕';
+    opacity: 0.4;
+  }
+  th button[aria-sort='ascending']::after {
+    content: ' ↑';
+    opacity: 1;
+  }
+  th button[aria-sort='descending']::after {
+    content: ' ↓';
+    opacity: 1;
+  }
+  .num {
+    width: 3rem;
     color: var(--muted);
-    padding: 2rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .sr {
+    width: 1%;
+  }
+  tbody tr:hover {
+    background: #fafcfd;
+  }
+  tbody tr.flash {
+    animation: flash 2.5s ease-out;
+  }
+  @keyframes flash {
+    0%,
+    30% {
+      background: rgb(43 165 155 / 0.22);
+    }
   }
   .pill {
     display: inline-block;
-    padding: 0.2rem 0.6rem;
+    padding: 0.2rem 0.65rem;
     border-radius: 999px;
     background: var(--bg-soft);
     color: var(--muted);
@@ -245,5 +614,33 @@ const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'sh
   .pill--ok {
     background: rgb(43 165 155 / 0.14);
     color: var(--teal-ink);
+  }
+  .row-btn {
+    min-height: 34px;
+    padding: 0 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--navy);
+    font: 600 0.82rem var(--font-sans);
+    cursor: pointer;
+  }
+  .row-btn:hover {
+    border-color: var(--navy);
+  }
+  .row-btn:disabled {
+    opacity: 0.5;
+    cursor: progress;
+  }
+  .no-results {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live__dot,
+    tbody tr.flash {
+      animation: none;
+    }
   }
 </style>

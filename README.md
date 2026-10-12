@@ -40,7 +40,7 @@ attendance; for anyone else it shows the ticket.
 
 | Page | Use |
 | --- | --- |
-| `/admin` | Password-protected list of registrants per event, stats, CSV export |
+| `/admin` | Password-protected sheet per event (one tab each): live list refreshed every few seconds, stats, search, filters (validated / pending), sorting, manual validation, Excel export (one event, or all events with one sheet each) |
 | `/admin/scan` | Camera scanner for the entrance (green = validated, orange = already scanned, red = invalid) |
 
 ### Setup (once)

@@ -72,3 +72,10 @@ export const checkIn = async (code: string) => {
   if (existing) return { status: 'already' as const, registration: existing };
   return { status: 'invalid' as const };
 };
+
+/** Cancels a validation made by mistake. */
+export const undoCheckIn = async (code: string) => {
+  const [row] = await db()<Registration[]>`
+    update registrations set checked_in_at = null where ticket_code = ${code} returning *`;
+  return row;
+};
