@@ -74,6 +74,7 @@ export const POST: APIRoute = async ({ request, site }) => {
   try {
     await sendTicket({
       site: siteUrl,
+      origin: new URL(request.url).origin,
       to: owner?.email ?? email,
       lang: owner?.lang ?? lang,
       firstName: owner?.first_name ?? firstName,

@@ -147,6 +147,13 @@ export const fr: Dict = {
     loading: 'Vérification des places…',
     unavailable: 'Nombre de places indisponible',
   },
+  banner: {
+    label: 'Prochain événement',
+    open: 'Inscriptions ouvertes',
+    startsIn: 'Début dans',
+    register: 'S’inscrire',
+    details: 'Détails',
+  },
   form: {
     title: 'Inscription',
     close: 'Fermer',
@@ -183,7 +190,7 @@ export const fr: Dict = {
     date: 'Date',
     time: 'Heure',
     place: 'Lieu',
-    download: 'Télécharger le QR code',
+    download: 'Télécharger mon billet (PDF)',
     help: 'Présentez ce QR code à l’entrée — sur votre téléphone ou imprimé.',
     checkedIn: 'Présence validée',
     notFound: 'Ce billet n’existe pas.',

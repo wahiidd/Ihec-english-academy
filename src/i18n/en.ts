@@ -145,6 +145,13 @@ export const en = {
     loading: 'Checking seats…',
     unavailable: 'Seat count unavailable',
   },
+  banner: {
+    label: 'Next event',
+    open: 'Registration open',
+    startsIn: 'Starts in',
+    register: 'Register',
+    details: 'Details',
+  },
   form: {
     title: 'Register',
     close: 'Close',
@@ -181,7 +188,7 @@ export const en = {
     date: 'Date',
     time: 'Time',
     place: 'Place',
-    download: 'Download the QR code',
+    download: 'Download my ticket (PDF)',
     help: 'Show this QR code at the entrance — on your phone or printed.',
     checkedIn: 'Attendance confirmed',
     notFound: 'This ticket does not exist.',

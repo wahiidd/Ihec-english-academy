@@ -1,0 +1,283 @@
+---
+/* Top-of-page banner for the next event open to registration: what, when, countdown,
+   seats left and a button that opens the registration dialog directly. */
+import { closesAt, events } from '../data/events';
+import { t, formatDate, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).banner;
+const event = events
+  .filter((e) => e.registration && Date.parse(closesAt(e)) > Date.now())
+  .sort((a, b) => Date.parse(a.date) - Date.parse(b.date))[0];
+
+const when = event
+  ? formatDate(event.date, lang, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      year: undefined,
+      ...(event.showTime === false ? {} : { hour: '2-digit', minute: '2-digit' }),
+    })
+  : '';
+---
+
+{
+  event && (
+    <aside
+      class="eb"
+      aria-label={dict.label}
+      data-event-banner
+      data-slug={event.slug}
+      data-start={event.date}
+      data-closes={closesAt(event)}
+      data-lang={lang}
+    >
+      <div class="container eb__inner">
+        <div class="eb__what">
+          <span class="eb__live">
+            <span class="eb__dot" aria-hidden="true" />
+            {dict.open}
+          </span>
+          <p class="eb__title">
+            <strong>{event.title[lang]}</strong>
+            <span class="eb__when">
+              {when}
+              {event.place && <> · {event.place[lang]}</>}
+            </span>
+          </p>
+        </div>
+
+        <div class="eb__status">
+          <p class="eb__clock tnum" data-eb-clock aria-label={dict.startsIn}>—</p>
+          <p class="eb__seats tnum" data-eb-seats />
+        </div>
+
+        <div class="eb__actions">
+          <button class="eb__btn" type="button" data-open-registration={event.slug} data-title={event.title[lang]} data-eb-btn>
+            {dict.register} <span aria-hidden="true">→</span>
+          </button>
+          <a class="eb__more" href="#events">{dict.details}</a>
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+<script>
+  const banner = document.querySelector<HTMLElement>('[data-event-banner]');
+  if (banner) {
+    const fr = banner.dataset.lang === 'fr';
+    const L = fr
+      ? { d: 'j', left: (n: number) => (n === 1 ? '1 place restante' : `${n} places restantes`), full: 'Complet', closed: 'Inscriptions closes', register: 'S’inscrire' }
+      : { d: 'd', left: (n: number) => (n === 1 ? '1 seat left' : `${n} seats left`), full: 'Full', closed: 'Registration closed', register: 'Register' };
+    const clock = banner.querySelector<HTMLElement>('[data-eb-clock]')!;
+    const seats = banner.querySelector<HTMLElement>('[data-eb-seats]')!;
+    const btn = banner.querySelector<HTMLButtonElement>('[data-eb-btn]')!;
+    const start = Date.parse(banner.dataset.start!);
+    const closes = Date.parse(banner.dataset.closes!);
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    const setButton = (label: string, disabled: boolean) => {
+      btn.disabled = disabled;
+      btn.firstChild!.textContent = `${label} `;
+      btn.querySelector('span')!.hidden = disabled;
+    };
+
+    const tick = () => {
+      const s = Math.max(0, Math.floor((start - Date.now()) / 1000));
+      const d = Math.floor(s / 86400);
+      clock.textContent = `${d}${L.d} ${pad(Math.floor((s % 86400) / 3600))}:${pad(Math.floor((s % 3600) / 60))}:${pad(s % 60)}`;
+      if (Date.now() >= closes && !btn.disabled) setButton(L.closed, true);
+    };
+    tick();
+    setInterval(tick, 1000);
+
+    const refresh = async () => {
+      try {
+        const res = await fetch('/api/availability', { cache: 'no-store' });
+        const data: { slug: string; remaining: number; open: boolean }[] = await res.json();
+        const a = data.find((x) => x.slug === banner.dataset.slug);
+        if (!a) return;
+        seats.textContent = a.remaining > 0 ? L.left(a.remaining) : L.full;
+        banner.classList.toggle('is-low', a.remaining > 0 && a.remaining <= 15);
+        if (a.remaining === 0) setButton(L.full, true);
+        else if (!a.open) setButton(L.closed, true);
+        else setButton(L.register, false);
+      } catch {
+        seats.textContent = '';
+      }
+    };
+    refresh();
+    setInterval(refresh, 30_000);
+    document.addEventListener('registration:changed', refresh);
+  }
+</script>
+
+<style>
+  .eb {
+    position: relative;
+    z-index: 51;
+    background: var(--navy-deep);
+    background-image: linear-gradient(90deg, var(--navy-deep) 0%, var(--navy) 60%, #12466b 100%);
+    color: #fff;
+  }
+  .eb__inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.6rem;
+    padding-block: 0.75rem;
+  }
+  .eb__what {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    min-width: 0;
+  }
+  .eb__live {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(127 211 201 / 0.16);
+    color: var(--teal-light);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .eb__dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--teal-light);
+    animation: eb-pulse 2s ease-out infinite;
+  }
+  @keyframes eb-pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgb(127 211 201 / 0.7);
+    }
+    70%,
+    100% {
+      box-shadow: 0 0 0 7px rgb(127 211 201 / 0);
+    }
+  }
+  .eb__title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.1rem 0.6rem;
+    min-width: 0;
+    font-size: 0.95rem;
+  }
+  .eb__title strong {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+  }
+  .eb__when {
+    color: var(--on-navy-muted);
+    font-size: 0.85rem;
+  }
+  .eb__status {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+  }
+  .eb__clock {
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .eb__seats {
+    color: var(--teal-light);
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .is-low .eb__seats {
+    color: #ffc58f;
+  }
+  .eb__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+  .eb__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 44px;
+    padding: 0 1.3rem;
+    border: 0;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--navy);
+    font: 700 0.95rem var(--font-sans);
+    white-space: nowrap;
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+  }
+  .eb__btn:hover {
+    transform: translateY(-1px);
+    background: var(--bg-soft);
+  }
+  .eb__btn:active {
+    transform: translateY(0);
+  }
+  .eb__btn:disabled {
+    background: rgb(255 255 255 / 0.2);
+    color: #fff;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .eb__more {
+    color: var(--on-navy-muted);
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+  .eb__more:hover {
+    color: #fff;
+  }
+
+  @media (max-width: 639px) {
+    .eb__btn {
+      flex: 1;
+    }
+  }
+  @media (min-width: 640px) and (max-width: 959px) {
+    .eb__inner {
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+    }
+    .eb__what {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (min-width: 960px) {
+    .eb__inner {
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 1.75rem;
+    }
+    .eb__status {
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .eb__dot {
+      animation: none;
+    }
+  }
+</style>

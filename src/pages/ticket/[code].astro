@@ -48,7 +48,7 @@ Astro.response.headers.set('Cache-Control', 'private, no-store');
             <img src={`/api/qr/${reg.ticket_code}`} alt="QR code" width="260" height="260" />
             <p class="ticket__code">{dict.number} {reg.ticket_code.slice(0, 8).toUpperCase()}</p>
             <p class="ticket__help">{dict.help}</p>
-            <a class="btn btn--primary" href={`/api/qr/${reg.ticket_code}?download=1`} download>{dict.download}</a>
+            <a class="btn btn--primary" href={`/api/ticket/${reg.ticket_code}`} download>{dict.download}</a>
           </div>
         </article>
       ) : (

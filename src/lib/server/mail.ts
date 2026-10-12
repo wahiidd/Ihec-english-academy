@@ -3,6 +3,7 @@ import { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, MAIL_FROM } from 'astro:env
 import type { AcademyEvent } from '../../data/events';
 import type { Lang } from '../../i18n/utils';
 import { ticketEmail } from './email-template';
+import { buildTicketPdf, ticketFileName } from './ticket-file';
 import { checkInUrl, qrPng, ticketUrl } from './tickets';
 
 let transport: nodemailer.Transporter | undefined;
@@ -20,6 +21,7 @@ const mailer = () => {
 
 export const sendTicket = async (p: {
   site: URL;
+  origin: string;
   to: string;
   lang: Lang;
   firstName: string;
@@ -39,7 +41,7 @@ export const sendTicket = async (p: {
     logoUrl: new URL('/images/logo-full.png', p.site).href,
     qrCid,
   });
-  const fileName = p.lang === 'fr' ? 'billet-qr-code.png' : 'ticket-qr-code.png';
+  const pdf = await buildTicketPdf(p);
 
   await mailer().sendMail({
     from: MAIL_FROM || `IHEC English Academy <${SMTP_USER}>`,
@@ -49,7 +51,7 @@ export const sendTicket = async (p: {
     text,
     attachments: [
       { filename: 'qr.png', content: png, cid: qrCid, contentType: 'image/png', contentDisposition: 'inline' },
-      { filename: fileName, content: png, contentType: 'image/png' },
+      { filename: ticketFileName(p.event, p.lang), content: Buffer.from(pdf), contentType: 'application/pdf' },
     ],
   });
 };
