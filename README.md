@@ -51,6 +51,7 @@ attendance; for anyone else it shows the ticket.
    1. Google Account → *Security* → turn on **2-Step Verification** (required for app passwords).
    2. Open <https://myaccount.google.com/apppasswords>, create an app password named “Website”.
    3. Copy the 16-character password (without spaces) → `SMTP_PASS`. `SMTP_USER` is the Gmail address.
+   4. Check it with `npm run test:smtp` (sends a test e-mail to the academy's own address).
 3. **Admin**: choose `ADMIN_PASSWORD`; generate `ADMIN_SECRET` with `openssl rand -hex 32`.
 4. **Vercel** → *Project* → *Settings* → *Environment Variables*: add every variable from `.env.example`, then redeploy.
 5. Locally: copy `.env.example` to `.env`, fill it in, run `npm run dev`.

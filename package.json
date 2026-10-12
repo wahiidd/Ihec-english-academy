@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "test:smtp": "node --env-file=.env scripts/test-smtp.mjs"
   },
   "dependencies": {
     "@astrojs/vercel": "^11.0.14",

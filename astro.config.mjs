@@ -3,12 +3,14 @@ import { defineConfig, envField } from 'astro/config';
 import vercel from '@astrojs/vercel';
 
 // Public URL of the site (canonical links, Open Graph, hreflang, ticket links in e-mails).
-// Netlify exposes URL, Vercel exposes VERCEL_PROJECT_PRODUCTION_URL; SITE_URL overrides both
-// once a custom domain is set.
+// Vercel previews use their branch URL (so ticket links and QR codes work before merging),
+// production uses VERCEL_PROJECT_PRODUCTION_URL; SITE_URL overrides both once a custom domain is set.
+const vercelUrl =
+  process.env.VERCEL_ENV === 'preview' ? process.env.VERCEL_BRANCH_URL : process.env.VERCEL_PROJECT_PRODUCTION_URL;
 const site =
   process.env.SITE_URL ||
   process.env.URL ||
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) ||
+  (vercelUrl && `https://${vercelUrl}`) ||
   'http://localhost:4321';
 
 const secret = (optional = true) => envField.string({ context: 'server', access: 'secret', optional });
