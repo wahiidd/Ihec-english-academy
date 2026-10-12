@@ -1,0 +1,166 @@
+---
+import Base from '../../layouts/Base.astro';
+import { findEvent } from '../../data/events';
+import { findByCode } from '../../lib/server/db';
+import { isTicketCode } from '../../lib/server/tickets';
+import { t, formatDate, homePath } from '../../i18n/utils';
+
+export const prerender = false;
+
+const code = Astro.params.code;
+const reg = isTicketCode(code) ? await findByCode(code) : undefined;
+const lang = reg?.lang ?? 'fr';
+const dict = t(lang).ticket;
+const event = reg ? findEvent(reg.event_slug) : undefined;
+if (!reg || !event) Astro.response.status = 404;
+Astro.response.headers.set('Cache-Control', 'private, no-store');
+---
+
+<Base lang={lang} title={`${dict.title} — IHEC English Academy`} alternates={false} noindex>
+  <main class="ticket-page">
+    {
+      reg && event ? (
+        <article class="ticket">
+          <header class="ticket__head">
+            <a href={homePath(lang)}>
+              <img src="/images/logo-full.png" alt="IHEC Carthage English Academy" width="900" height="470" />
+            </a>
+          </header>
+
+          <div class="ticket__body">
+            <p class="ticket__kicker">{dict.title}</p>
+            <h1>{event.title[lang]}</h1>
+
+            <dl class="ticket__facts">
+              <div><dt>{dict.holder}</dt><dd>{reg.first_name} {reg.last_name}</dd></div>
+              <div><dt>{dict.date}</dt><dd>{formatDate(event.date, lang, { weekday: 'long' })}</dd></div>
+              {event.showTime !== false && (
+                <div><dt>{dict.time}</dt><dd>{formatDate(event.date, lang, { day: undefined, month: undefined, year: undefined, hour: '2-digit', minute: '2-digit' })}</dd></div>
+              )}
+              {event.place && <div><dt>{dict.place}</dt><dd>{event.place[lang]}</dd></div>}
+            </dl>
+          </div>
+
+          <div class="ticket__tear" aria-hidden="true"></div>
+
+          <div class="ticket__qr">
+            {reg.checked_in_at && <p class="ticket__ok">✓ {dict.checkedIn}</p>}
+            <img src={`/api/qr/${reg.ticket_code}`} alt="QR code" width="260" height="260" />
+            <p class="ticket__code">{dict.number} {reg.ticket_code.slice(0, 8).toUpperCase()}</p>
+            <p class="ticket__help">{dict.help}</p>
+            <a class="btn btn--primary" href={`/api/qr/${reg.ticket_code}?download=1`} download>{dict.download}</a>
+          </div>
+        </article>
+      ) : (
+        <p class="ticket-missing">{dict.notFound}</p>
+      )
+    }
+  </main>
+</Base>
+
+<style>
+  .ticket-page {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+    background: var(--bg-soft);
+  }
+  .ticket {
+    width: min(100%, 440px);
+    border-radius: 22px;
+    background: #fff;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    border-top: 6px solid var(--navy);
+  }
+  .ticket__head {
+    padding: 1.5rem 1.5rem 0;
+    display: grid;
+    place-items: center;
+  }
+  .ticket__head img {
+    width: 180px;
+  }
+  .ticket__body {
+    padding: 1.25rem 1.75rem 1.5rem;
+  }
+  .ticket__kicker {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal-ink);
+  }
+  .ticket h1 {
+    margin-top: 0.3rem;
+    font-size: 1.6rem;
+  }
+  .ticket__facts {
+    margin: 1.25rem 0 0;
+    border-top: 2px solid var(--navy);
+  }
+  .ticket__facts div {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .ticket__facts dt {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .ticket__facts dd {
+    margin: 0;
+    font-weight: 600;
+    color: var(--navy);
+    text-align: end;
+  }
+  .ticket__tear {
+    height: 0;
+    margin: 0 1rem;
+    border-top: 2px dashed var(--line);
+  }
+  .ticket__qr {
+    display: grid;
+    justify-items: center;
+    gap: 0.6rem;
+    padding: 1.5rem 1.75rem 1.75rem;
+    text-align: center;
+  }
+  .ticket__qr img {
+    width: 240px;
+    height: 240px;
+  }
+  .ticket__ok {
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    background: rgb(43 165 155 / 0.14);
+    color: var(--teal-ink);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .ticket__code {
+    font-family: ui-monospace, Menlo, monospace;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .ticket__help {
+    max-width: 30ch;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .ticket__qr .btn {
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+  .ticket-missing {
+    font-size: 1.1rem;
+    color: var(--muted);
+  }
+</style>

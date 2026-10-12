@@ -1,6 +1,7 @@
 ---
 import Icon from './Icon.astro';
-import { events } from '../data/events';
+import RegistrationDialog from './RegistrationDialog.astro';
+import { closesAt, events } from '../data/events';
 import { t, formatDate, launchDateLabel, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -10,8 +11,11 @@ interface Props {
 const { lang } = Astro.props;
 const dict = t(lang).events;
 const upcoming = events
-  .filter((e) => Date.parse(e.date) >= Date.now())
+  .filter((e) => Date.parse(e.date) >= Date.now() - 86_400_000)
   .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+const hasRegistration = upcoming.some((e) => e.registration);
+// Registration closes at 00:00 on the event day: show the eve as the last day.
+const lastDay = (iso: string) => formatDate(new Date(Date.parse(iso) - 1).toISOString(), lang, { weekday: 'long' });
 ---
 
 <section class="section section--soft" id="events">
@@ -23,22 +27,48 @@ const upcoming = events
 
     {
       upcoming.length > 0 ? (
-        <ul class="events">
+        <ul class="events" data-events data-lang={lang}>
           {upcoming.map((event) => (
-            <li class="event" data-event-date={event.date}>
-              <div class="event__date">
+            <li class:list={['event', event.registration && 'event--open']} data-event-date={event.date} data-slug={event.slug}>
+              <div class="event__date" aria-hidden="true">
                 <span class="event__day">{formatDate(event.date, lang, { month: undefined, year: undefined })}</span>
-                <span class="event__month">{formatDate(event.date, lang, { day: undefined, month: 'short' })}</span>
+                <span class="event__month">{formatDate(event.date, lang, { day: undefined, month: 'short', year: undefined })}</span>
               </div>
+
               <div class="event__body">
                 <span class="badge">{dict.formats[event.format]}</span>
                 <h3>{event.title[lang]}</h3>
                 {event.description && <p>{event.description[lang]}</p>}
                 <p class="event__meta">
-                  {formatDate(event.date, lang, { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
+                  {event.showTime === false
+                    ? formatDate(event.date, lang, { weekday: 'long' })
+                    : formatDate(event.date, lang, { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
                   {event.place && <> · {event.place[lang]}</>}
                 </p>
+                {event.note && <p class="event__note">{event.note[lang]}</p>}
               </div>
+
+              {event.registration && (
+                <div class="reg" data-reg data-capacity={event.registration.capacity} data-start={event.date} data-closes={closesAt(event)}>
+                  <p class="reg__countdown" data-countdown aria-label={dict.startsIn}>
+                    <span class="reg__label">{dict.startsIn}</span>
+                    <span class="reg__clock tnum" data-clock>—</span>
+                  </p>
+
+                  <div class="reg__seats">
+                    <p>
+                      <strong class="tnum" data-remaining-label>{dict.loading}</strong>
+                      <span class="reg__of tnum">{dict.of.replace('{n}', String(event.registration.capacity))}</span>
+                    </p>
+                    <div class="reg__bar" aria-hidden="true"><span data-bar></span></div>
+                  </div>
+
+                  <button class="btn btn--primary reg__btn" type="button" data-open-registration={event.slug} data-title={event.title[lang]} disabled>
+                    {dict.register}
+                  </button>
+                  <p class="reg__closes">{dict.closesOn.replace('{date}', lastDay(closesAt(event)))}</p>
+                </div>
+              )}
             </li>
           ))}
         </ul>
@@ -54,11 +84,79 @@ const upcoming = events
   </div>
 </section>
 
+{hasRegistration && <RegistrationDialog lang={lang} />}
+
 <script>
+  type Availability = { slug: string; capacity: number; remaining: number; open: boolean; closesAt: string };
+
+  const list = document.querySelector<HTMLElement>('[data-events]');
+
   // Hide events that have passed since the last build.
   document.querySelectorAll<HTMLElement>('[data-event-date]').forEach((el) => {
-    if (Date.parse(el.dataset.eventDate ?? '') < Date.now()) el.hidden = true;
+    if (Date.parse(el.dataset.eventDate ?? '') + 4 * 3_600_000 < Date.now()) el.hidden = true;
   });
+
+  if (list) {
+    const lang = list.dataset.lang === 'fr' ? 'fr' : 'en';
+    const L = {
+      en: { d: 'd', h: 'h', m: 'min', s: 's', left: (n: number) => (n === 1 ? '1 seat left' : `${n} seats left`), full: 'Full', closed: 'Registration closed', register: 'Register', unavailable: 'Seat count unavailable', now: 'Happening now' },
+      fr: { d: 'j', h: 'h', m: 'min', s: 's', left: (n: number) => (n === 1 ? '1 place restante' : `${n} places restantes`), full: 'Complet', closed: 'Inscriptions closes', register: 'S’inscrire', unavailable: 'Nombre de places indisponible', now: 'En cours' },
+    }[lang];
+    const pad = (n: number) => String(n).padStart(2, '0');
+
+    const regs = [...list.querySelectorAll<HTMLElement>('[data-reg]')];
+
+    // Live countdown to the start of each event.
+    const tick = () => {
+      for (const reg of regs) {
+        const clock = reg.querySelector<HTMLElement>('[data-clock]')!;
+        const diff = Date.parse(reg.dataset.start!) - Date.now();
+        if (diff <= 0) {
+          clock.textContent = L.now;
+          continue;
+        }
+        const s = Math.floor(diff / 1000);
+        const d = Math.floor(s / 86400);
+        clock.textContent = `${d}${L.d} ${pad(Math.floor((s % 86400) / 3600))}${L.h} ${pad(Math.floor((s % 3600) / 60))}${L.m} ${pad(s % 60)}${L.s}`;
+      }
+    };
+    tick();
+    setInterval(tick, 1000);
+
+    const render = (reg: HTMLElement, a?: Availability) => {
+      const label = reg.querySelector<HTMLElement>('[data-remaining-label]')!;
+      const bar = reg.querySelector<HTMLElement>('[data-bar]')!;
+      const btn = reg.querySelector<HTMLButtonElement>('[data-open-registration]')!;
+      const closed = Date.now() >= Date.parse(reg.dataset.closes!);
+      if (!a) {
+        label.textContent = L.unavailable;
+        btn.disabled = closed;
+        btn.textContent = closed ? L.closed : L.register;
+        return;
+      }
+      label.textContent = a.remaining > 0 ? L.left(a.remaining) : L.full;
+      reg.querySelector<HTMLElement>('.reg__of')!.hidden = a.remaining === 0;
+      bar.style.transform = `scaleX(${(a.capacity - a.remaining) / a.capacity})`;
+      reg.classList.toggle('is-low', a.remaining > 0 && a.remaining <= Math.max(10, a.capacity * 0.1));
+      btn.disabled = !a.open;
+      btn.textContent = a.remaining === 0 ? L.full : closed || !a.open ? L.closed : L.register;
+    };
+
+    const refresh = async () => {
+      try {
+        const res = await fetch('/api/availability', { cache: 'no-store' });
+        if (!res.ok) throw new Error(String(res.status));
+        const data: Availability[] = await res.json();
+        for (const reg of regs) render(reg, data.find((a) => a.slug === reg.closest<HTMLElement>('[data-slug]')!.dataset.slug));
+      } catch {
+        regs.forEach((reg) => render(reg));
+      }
+    };
+    refresh();
+    setInterval(refresh, 30_000);
+    // The dialog announces a new count after each registration.
+    document.addEventListener('registration:changed', refresh);
+  }
 </script>
 
 <style>
@@ -93,12 +191,17 @@ const upcoming = events
     list-style: none;
   }
   .event {
-    display: flex;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 1.5rem;
     padding: 1.5rem;
     border-radius: var(--radius);
     background: #fff;
     border: 1px solid var(--line);
+  }
+  .event--open {
+    border-color: rgb(43 165 155 / 0.45);
+    box-shadow: var(--shadow);
   }
   .event[hidden] {
     display: none;
@@ -108,7 +211,6 @@ const upcoming = events
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
     width: 76px;
     height: 76px;
     border-radius: 14px;
@@ -131,6 +233,7 @@ const upcoming = events
     display: grid;
     gap: 0.4rem;
     justify-items: start;
+    align-content: start;
   }
   .event__body p {
     color: var(--muted);
@@ -138,5 +241,117 @@ const upcoming = events
   .event__meta {
     font-size: 0.9rem;
     font-weight: 500;
+  }
+  .event__note {
+    margin-top: 0.25rem;
+    font-size: 0.85rem;
+    font-style: italic;
+  }
+
+  .reg {
+    grid-column: 1 / -1;
+    display: grid;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 12px;
+    background: var(--bg-soft);
+  }
+  .reg__countdown {
+    display: grid;
+    gap: 0.15rem;
+  }
+  .reg__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal-ink);
+  }
+  .reg__clock {
+    font-family: var(--font-serif);
+    font-size: clamp(1.4rem, 4vw, 1.9rem);
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .reg__seats p {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem;
+    color: var(--ink);
+  }
+  .reg__seats strong {
+    font-size: 1.05rem;
+    color: var(--navy);
+  }
+  .is-low .reg__seats strong {
+    color: #a3471b;
+  }
+  .reg__of {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .reg__bar {
+    height: 8px;
+    margin-top: 0.5rem;
+    border-radius: 999px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .reg__bar span {
+    display: block;
+    height: 100%;
+    background: var(--gradient);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .reg__btn {
+    width: 100%;
+  }
+  .reg__btn:disabled {
+    background: var(--line);
+    color: var(--muted);
+    box-shadow: none;
+    cursor: not-allowed;
+    transform: none;
+  }
+  .reg__closes {
+    font-size: 0.85rem;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  @media (max-width: 559px) {
+    .event {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 1rem;
+      padding: 1.25rem;
+    }
+    .event__date {
+      flex-direction: row;
+      justify-self: start;
+      gap: 0.5rem;
+      width: auto;
+      height: auto;
+      padding: 0.45rem 0.9rem;
+      border-radius: 10px;
+    }
+    .event__day {
+      font-size: 1.3rem;
+    }
+  }
+
+  @media (min-width: 900px) {
+    .event--open {
+      grid-template-columns: auto minmax(0, 1fr) 320px;
+    }
+    .reg {
+      grid-column: auto;
+    }
   }
 </style>

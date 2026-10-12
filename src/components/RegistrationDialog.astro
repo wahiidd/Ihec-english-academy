@@ -1,0 +1,477 @@
+---
+import Icon from './Icon.astro';
+import { STUDY_LEVELS } from '../data/events';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const f = t(lang).form;
+const levels = [...STUDY_LEVELS, 'other'] as const;
+---
+
+<dialog class="regd" data-registration-dialog aria-labelledby="regd-title" data-lang={lang}>
+  <div class="regd__panel">
+    <header class="regd__head">
+      <div>
+        <p class="regd__kicker">{f.title}</p>
+        <h2 id="regd-title" data-dialog-event></h2>
+      </div>
+      <button class="regd__close" type="button" data-close aria-label={f.close}>
+        <Icon name="close" size={22} />
+      </button>
+    </header>
+
+    <form class="regd__form" data-form novalidate>
+      <input type="hidden" name="event" />
+      <input type="hidden" name="lang" value={lang} />
+      <div class="hp" aria-hidden="true">
+        <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+      </div>
+
+      <div class="regd__row">
+        <label class="field">
+          <span>{f.firstName}</span>
+          <input name="firstName" autocomplete="given-name" required maxlength="60" />
+          <small class="field__error" data-error-for="firstName">{f.errors.firstName}</small>
+        </label>
+        <label class="field">
+          <span>{f.lastName}</span>
+          <input name="lastName" autocomplete="family-name" required maxlength="60" />
+          <small class="field__error" data-error-for="lastName">{f.errors.lastName}</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>{f.email}</span>
+        <input name="email" type="email" inputmode="email" autocomplete="email" required maxlength="254" />
+        <small class="field__error" data-error-for="email">{f.errors.email}</small>
+      </label>
+
+      <label class="field">
+        <span>{f.phone}</span>
+        <input name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+216 20 123 456" maxlength="30" />
+        <small class="field__error" data-error-for="phone">{f.errors.phone}</small>
+      </label>
+
+      <fieldset class="field levels">
+        <legend>{f.level}</legend>
+        <div class="levels__grid">
+          {
+            levels.map((level) => (
+              <label class="level">
+                <input type="radio" name="level" value={level} required />
+                <span>{f.levels[level]}</span>
+              </label>
+            ))
+          }
+        </div>
+        <input class="levels__other" name="levelOther" placeholder={f.levelOther} aria-label={f.levelOther} maxlength="60" hidden />
+        <small class="field__error" data-error-for="level">{f.errors.level}</small>
+      </fieldset>
+
+      <p class="regd__alert" data-alert role="alert" hidden></p>
+
+      <button class="btn btn--primary regd__submit" type="submit" data-submit>
+        <span data-submit-label>{f.submit}</span>
+        <span class="spinner" aria-hidden="true"></span>
+      </button>
+    </form>
+
+    <div class="regd__done" data-done hidden tabindex="-1">
+      <span class="regd__check" aria-hidden="true"><Icon name="check" size={34} /></span>
+      <h3 data-done-title></h3>
+      <p data-done-text></p>
+      <div class="regd__actions">
+        <a class="btn btn--ghost" data-ticket-link href="#" target="_blank" rel="noopener">{f.viewTicket}</a>
+        <button class="btn btn--primary" type="button" data-close>{f.done}</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script define:vars={{ f }}>
+  const dialog = document.querySelector('[data-registration-dialog]');
+  const form = dialog.querySelector('[data-form]');
+  const done = dialog.querySelector('[data-done]');
+  const alertBox = dialog.querySelector('[data-alert]');
+  const submit = dialog.querySelector('[data-submit]');
+  const submitLabel = dialog.querySelector('[data-submit-label]');
+  const other = form.querySelector('[name=levelOther]');
+  let lastTrigger = null;
+
+  const setError = (name, on) => {
+    const field = form.querySelector(`[data-error-for="${name}"]`)?.closest('.field');
+    field?.classList.toggle('has-error', on);
+    const input = form.querySelector(`[name="${name}"]`);
+    if (input && input.type !== 'radio') input.setAttribute('aria-invalid', String(on));
+  };
+
+  const open = (slug, title, trigger) => {
+    lastTrigger = trigger;
+    form.reset();
+    form.hidden = false;
+    done.hidden = true;
+    alertBox.hidden = true;
+    other.hidden = true;
+    form.querySelectorAll('.has-error').forEach((el) => el.classList.remove('has-error'));
+    form.elements.event.value = slug;
+    dialog.querySelector('[data-dialog-event]').textContent = title;
+    dialog.showModal();
+    form.elements.firstName.focus();
+  };
+
+  const close = () => {
+    dialog.close();
+    lastTrigger?.focus();
+  };
+
+  document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('[data-open-registration]');
+    if (trigger && !trigger.disabled) open(trigger.dataset.openRegistration, trigger.dataset.title, trigger);
+  });
+  dialog.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+  // Click on the backdrop closes the dialog.
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) close();
+  });
+
+  form.addEventListener('change', (e) => {
+    if (e.target.name === 'level') {
+      other.hidden = e.target.value !== 'other';
+      if (!other.hidden) other.focus();
+      setError('level', false);
+    }
+  });
+  // Clear a field's error as soon as the user fixes it.
+  form.addEventListener('input', (e) => {
+    if (e.target.name && e.target.name !== 'level') setError(e.target.name === 'levelOther' ? 'level' : e.target.name, false);
+  });
+
+  const validate = (data) => {
+    const errors = {};
+    if (!data.firstName.trim()) errors.firstName = true;
+    if (!data.lastName.trim()) errors.lastName = true;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(data.email.trim())) errors.email = true;
+    if (!/^\+?[\d\s().-]{8,20}$/.test(data.phone.trim())) errors.phone = true;
+    if (!data.level || (data.level === 'other' && data.levelOther.trim().length < 2)) errors.level = true;
+    return errors;
+  };
+
+  const showErrors = (errors) => {
+    ['firstName', 'lastName', 'email', 'phone', 'level'].forEach((n) => setError(n, Boolean(errors[n])));
+    const first = Object.keys(errors)[0];
+    if (first) (first === 'level' ? form.querySelector('[name=level]') : form.elements[first]).focus();
+  };
+
+  const busy = (on) => {
+    submit.disabled = on;
+    submit.classList.toggle('is-busy', on);
+    submitLabel.textContent = on ? f.sending : f.submit;
+  };
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    alertBox.hidden = true;
+    const data = Object.fromEntries(new FormData(form));
+    data.level ??= '';
+    const errors = validate(data);
+    if (Object.keys(errors).length) return showErrors(errors);
+
+    busy(true);
+    try {
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (body.status === 'invalid' && body.fields) return showErrors(body.fields);
+      if (body.status === 'ok' || body.status === 'duplicate') {
+        const email = data.email.trim().toLowerCase();
+        dialog.querySelector('[data-done-title]').textContent = body.status === 'ok' ? f.successTitle : f.duplicateTitle;
+        dialog.querySelector('[data-done-text]').textContent = !body.emailSent
+          ? f.noEmailText
+          : (body.status === 'ok' ? f.successText : f.duplicateText).replace('{email}', email);
+        dialog.querySelector('[data-ticket-link]').href = body.ticketUrl;
+        form.hidden = true;
+        done.hidden = false;
+        dialog.scrollTop = 0;
+        done.focus();
+        document.dispatchEvent(new CustomEvent('registration:changed'));
+        return;
+      }
+      alertBox.textContent = body.status === 'full' ? f.errors.full : body.status === 'closed' ? f.errors.closed : f.errors.generic;
+      alertBox.hidden = false;
+      if (body.status === 'full' || body.status === 'closed') document.dispatchEvent(new CustomEvent('registration:changed'));
+    } catch {
+      alertBox.textContent = f.errors.generic;
+      alertBox.hidden = false;
+    } finally {
+      busy(false);
+    }
+  });
+</script>
+
+<style>
+  .regd {
+    width: min(100% - 2rem, 560px);
+    max-height: calc(100dvh - 2rem);
+    padding: 0;
+    border: 0;
+    border-radius: 20px;
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 0 30px 80px rgb(15 42 92 / 0.3);
+  }
+  .regd::backdrop {
+    background: rgb(10 29 64 / 0.55);
+    backdrop-filter: blur(3px);
+  }
+  .regd[open] {
+    animation: regd-in 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes regd-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.98);
+    }
+  }
+  .regd__panel {
+    padding: 1.5rem;
+  }
+  @media (min-width: 640px) {
+    .regd__panel {
+      padding: 2rem;
+    }
+  }
+  .regd__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .regd__kicker {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--teal-ink);
+  }
+  .regd__head h2 {
+    font-size: clamp(1.4rem, 4vw, 1.75rem);
+    margin-top: 0.25rem;
+  }
+  .regd__close {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: #fff;
+    color: var(--navy);
+    cursor: pointer;
+  }
+  .regd__close:hover {
+    border-color: var(--navy);
+  }
+
+  .regd__form {
+    display: grid;
+    gap: 1rem;
+  }
+  .regd__form[hidden] {
+    display: none;
+  }
+  .regd__row {
+    display: grid;
+    gap: 1rem;
+  }
+  @media (min-width: 480px) {
+    .regd__row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .field {
+    display: grid;
+    gap: 0.35rem;
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+  .field > span,
+  .field legend {
+    padding: 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  .field input:not([type='radio']) {
+    width: 100%;
+    min-height: 48px;
+    padding: 0 0.9rem;
+    border: 1px solid #c3d2e1;
+    border-radius: 10px;
+    background: #fff;
+    font: 500 1rem var(--font-sans);
+    color: var(--ink);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .field input:not([type='radio']):hover {
+    border-color: var(--navy);
+  }
+  .field input:not([type='radio']):focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgb(58 155 213 / 0.25);
+  }
+  .field__error {
+    display: none;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #b42318;
+  }
+  .has-error .field__error {
+    display: block;
+  }
+  .has-error input:not([type='radio']) {
+    border-color: #b42318;
+  }
+
+  .levels__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 128px), 1fr));
+    gap: 0.5rem;
+    margin-top: 0.35rem;
+  }
+  .level {
+    position: relative;
+  }
+  .level input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+  }
+  .level span {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0.5rem 0.8rem;
+    border: 1px solid #c3d2e1;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+  .level span:hover {
+    border-color: var(--navy);
+  }
+  .level input:checked + span {
+    border-color: var(--navy);
+    background: var(--navy);
+    color: #fff;
+  }
+  .level input:focus-visible + span {
+    outline: 3px solid var(--blue);
+    outline-offset: 2px;
+  }
+  .has-error .level span {
+    border-color: #b42318;
+  }
+  .levels__other {
+    margin-top: 0.5rem;
+  }
+
+  .regd__alert {
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
+    background: #fdecea;
+    color: #8a1c13;
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+  .regd__submit {
+    width: 100%;
+    margin-top: 0.25rem;
+  }
+  .regd__submit:disabled {
+    cursor: progress;
+    opacity: 0.85;
+    transform: none;
+  }
+  .spinner {
+    display: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgb(255 255 255 / 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .is-busy .spinner {
+    display: inline-block;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .regd__done {
+    display: grid;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 0.5rem 0 0.25rem;
+    text-align: center;
+    outline: none;
+  }
+  .regd__done[hidden] {
+    display: none;
+  }
+  .regd__check {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: rgb(43 165 155 / 0.14);
+    color: var(--teal-ink);
+    animation: pop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes pop {
+    from {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+  }
+  .regd__done h3 {
+    font-size: 1.5rem;
+  }
+  .regd__done p {
+    max-width: 38ch;
+    color: var(--muted);
+  }
+  .regd__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+
+  .hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+</style>

@@ -1,0 +1,82 @@
+---
+/* Target of the QR code. An admin (logged in on this phone) checks the attendee in;
+   anyone else is sent to the ticket page. */
+import Base from '../../layouts/Base.astro';
+import { isAdmin } from '../../lib/server/auth';
+import { checkIn } from '../../lib/server/db';
+import { findEvent, levelLabel } from '../../data/events';
+import { isTicketCode } from '../../lib/server/tickets';
+
+export const prerender = false;
+
+const code = Astro.params.code;
+if (!isAdmin(Astro.cookies)) return Astro.redirect(`/ticket/${code}`, 302);
+
+const result = isTicketCode(code) ? await checkIn(code) : { status: 'invalid' as const };
+const reg = result.status === 'invalid' ? undefined : result.registration;
+const tone = { ok: 'ok', already: 'warn', invalid: 'bad' }[result.status];
+const heading = { ok: 'Présence validée', already: 'Déjà scanné', invalid: 'Billet invalide' }[result.status];
+Astro.response.headers.set('Cache-Control', 'no-store');
+---
+
+<Base lang="fr" title={`${heading} — Admin`} alternates={false} noindex>
+  <main class:list={['result', `result--${tone}`]}>
+    <p class="result__icon" aria-hidden="true">{tone === 'ok' ? '✓' : tone === 'warn' ? '!' : '✕'}</p>
+    <h1>{heading}</h1>
+    {
+      reg && (
+        <>
+          <p class="result__name">{reg.first_name} {reg.last_name}</p>
+          <p>{levelLabel(reg.study_level)} · {findEvent(reg.event_slug)?.title.fr}</p>
+          {result.status === 'already' && reg.checked_in_at && (
+            <p>Scanné le {new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Africa/Tunis' }).format(reg.checked_in_at)}</p>
+          )}
+        </>
+      )
+    }
+    <a class="btn btn--light" href="/admin/scan">Scanner le suivant</a>
+  </main>
+</Base>
+
+<style>
+  .result {
+    min-height: 100dvh;
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.75rem;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #fff;
+  }
+  .result h1 {
+    color: #fff;
+    font-size: 2rem;
+  }
+  .result--ok {
+    background: #157a4f;
+  }
+  .result--warn {
+    background: #b25e09;
+  }
+  .result--bad {
+    background: #a52a1f;
+  }
+  .result__icon {
+    display: grid;
+    place-items: center;
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 0.18);
+    font-size: 3rem;
+    font-weight: 700;
+  }
+  .result__name {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .result .btn {
+    margin-top: 1rem;
+  }
+</style>

@@ -27,6 +27,34 @@ npm run preview   # serve the production build
 Empty values in `site.ts` show a "coming soon" state on the site (e.g. greyed-out social icons,
 "Registration opens soon" button). Fill them in and redeploy.
 
+## Event registrations
+
+Events live in `src/data/events.ts`. An event with a `registration: { capacity }` gets, on the home page,
+a live countdown, the number of seats left and a **Register** button. Registrations close at the end of the
+day before the event (or `closesAt`), or as soon as the capacity is reached — enforced in the database, so the
+limit can never be exceeded.
+
+Each registrant receives an HTML e-mail with a QR code (inline + attached) and a link to a ticket page where the
+QR code can be downloaded. The QR code opens `/c/<code>`: on a phone where an admin is logged in, it validates
+attendance; for anyone else it shows the ticket.
+
+| Page | Use |
+| --- | --- |
+| `/admin` | Password-protected list of registrants per event, stats, CSV export |
+| `/admin/scan` | Camera scanner for the entrance (green = validated, orange = already scanned, red = invalid) |
+
+### Setup (once)
+
+1. **Database — Supabase** (free): create a project, open *SQL Editor*, paste `supabase/schema.sql`, run it.
+   Then *Connect* → copy the **Transaction pooler** connection string (port 6543) → `DATABASE_URL`.
+2. **E-mail — Gmail SMTP** with `ihec.english.academy@gmail.com`:
+   1. Google Account → *Security* → turn on **2-Step Verification** (required for app passwords).
+   2. Open <https://myaccount.google.com/apppasswords>, create an app password named “Website”.
+   3. Copy the 16-character password (without spaces) → `SMTP_PASS`. `SMTP_USER` is the Gmail address.
+3. **Admin**: choose `ADMIN_PASSWORD`; generate `ADMIN_SECRET` with `openssl rand -hex 32`.
+4. **Vercel** → *Project* → *Settings* → *Environment Variables*: add every variable from `.env.example`, then redeploy.
+5. Locally: copy `.env.example` to `.env`, fill it in, run `npm run dev`.
+
 ## Deployment
 
 The site deploys as-is on **Netlify** or **Vercel** from the GitHub repository:

@@ -1,0 +1,249 @@
+---
+import AdminShell from '../../components/AdminShell.astro';
+import { events, levelLabel } from '../../data/events';
+import { adminConfigured, isAdmin } from '../../lib/server/auth';
+import { countsByEvent, listRegistrations, type Registration } from '../../lib/server/db';
+import { formatDate } from '../../i18n/utils';
+
+export const prerender = false;
+Astro.response.headers.set('Cache-Control', 'no-store');
+
+const loggedIn = isAdmin(Astro.cookies);
+const error = Astro.url.searchParams.has('error');
+const registrable = events.filter((e) => e.registration);
+
+let data: { event: (typeof registrable)[number]; rows: Registration[]; taken: number; present: number }[] = [];
+let dbError = false;
+if (loggedIn) {
+  try {
+    const counts = await countsByEvent();
+    data = await Promise.all(
+      registrable.map(async (event) => ({
+        event,
+        rows: await listRegistrations(event.slug),
+        taken: counts.get(event.slug)?.taken ?? 0,
+        present: counts.get(event.slug)?.checked_in ?? 0,
+      })),
+    );
+  } catch (err) {
+    console.error('admin: database error', err);
+    dbError = true;
+  }
+}
+const dt = new Intl.DateTimeFormat('fr-FR', { dateStyle: 'short', timeStyle: 'short', timeZone: 'Africa/Tunis' });
+---
+
+<AdminShell title={loggedIn ? 'Inscriptions' : 'Connexion'} loggedIn={loggedIn}>
+  {
+    !loggedIn ? (
+      <form class="login" method="post" action="/api/admin/login">
+        <h1>Espace admin</h1>
+        {!adminConfigured() && <p class="warn">ADMIN_PASSWORD et ADMIN_SECRET ne sont pas configurés.</p>}
+        <label>
+          <span>Mot de passe</span>
+          <input type="password" name="password" autocomplete="current-password" required autofocus />
+        </label>
+        {error && <p class="warn">Mot de passe incorrect.</p>}
+        <input type="hidden" name="next" value={Astro.url.searchParams.get('next') ?? '/admin'} />
+        <button class="btn btn--primary">Se connecter</button>
+      </form>
+    ) : dbError ? (
+      <p class="warn">Impossible de joindre la base de données. Vérifiez DATABASE_URL.</p>
+    ) : (
+      data.map(({ event, rows, taken, present }) => {
+        const capacity = event.registration!.capacity;
+        return (
+          <section class="panel">
+            <header class="panel__head">
+              <div>
+                <h1>{event.title.fr}</h1>
+                <p>
+                  {formatDate(event.date, 'fr', { weekday: 'long', hour: '2-digit', minute: '2-digit' })} · {event.place?.fr}
+                </p>
+              </div>
+              <div class="panel__actions">
+                <a class="btn btn--primary" href="/admin/scan">Scanner les billets</a>
+                <a class="btn btn--ghost" href={`/api/admin/export?event=${event.slug}`}>Exporter (CSV)</a>
+              </div>
+            </header>
+
+            <dl class="stats">
+              <div><dt>Inscrits</dt><dd>{taken}<small> / {capacity}</small></dd></div>
+              <div><dt>Places restantes</dt><dd>{Math.max(capacity - taken, 0)}</dd></div>
+              <div><dt>Présents</dt><dd>{present}<small> / {taken}</small></dd></div>
+            </dl>
+
+            <input class="search" type="search" placeholder="Rechercher un nom, un e-mail…" data-search aria-label="Rechercher" />
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr><th>Nom</th><th>Niveau</th><th>E-mail</th><th>Téléphone</th><th>Inscrit le</th><th>Présence</th></tr>
+                </thead>
+                <tbody>
+                  {rows.length === 0 && <tr><td colspan="6" class="empty">Aucune inscription pour l’instant.</td></tr>}
+                  {rows.map((r) => (
+                    <tr data-row>
+                      <td><strong>{r.first_name} {r.last_name}</strong></td>
+                      <td>{levelLabel(r.study_level)}</td>
+                      <td><a href={`mailto:${r.email}`}>{r.email}</a></td>
+                      <td><a href={`tel:${r.phone.replace(/\s/g, '')}`}>{r.phone}</a></td>
+                      <td>{dt.format(r.created_at)}</td>
+                      <td>{r.checked_in_at ? <span class="pill pill--ok">✓ {dt.format(r.checked_in_at)}</span> : <span class="pill">—</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        );
+      })
+    )
+  }
+</AdminShell>
+
+<script>
+  document.querySelectorAll<HTMLInputElement>('[data-search]').forEach((input) => {
+    const rows = [...input.closest('section')!.querySelectorAll<HTMLElement>('[data-row]')];
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      rows.forEach((r) => (r.hidden = !!q && !r.textContent!.toLowerCase().includes(q)));
+    });
+  });
+</script>
+
+<style>
+  .login {
+    display: grid;
+    gap: 1rem;
+    width: min(100%, 380px);
+    margin: 4rem auto;
+    padding: 2rem;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: var(--shadow);
+  }
+  .login h1 {
+    font-size: 1.6rem;
+  }
+  .login label {
+    display: grid;
+    gap: 0.35rem;
+    font-weight: 600;
+    color: var(--navy);
+  }
+  input[type='password'],
+  .search {
+    min-height: 48px;
+    padding: 0 0.9rem;
+    border: 1px solid #c3d2e1;
+    border-radius: 10px;
+    font: 500 1rem var(--font-sans);
+  }
+  .warn {
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    background: #fdecea;
+    color: #8a1c13;
+    font-weight: 500;
+  }
+
+  .panel {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .panel__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+  .panel__head h1 {
+    font-size: 1.8rem;
+  }
+  .panel__head p {
+    color: var(--muted);
+  }
+  .panel__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0.75rem;
+    margin: 0;
+  }
+  .stats div {
+    padding: 1rem 1.25rem;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+  .stats dt {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .stats dd {
+    margin: 0.25rem 0 0;
+    font-family: var(--font-serif);
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--navy);
+    font-variant-numeric: tabular-nums;
+  }
+  .stats small {
+    font-size: 1rem;
+    color: var(--muted);
+  }
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: #fff;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+  th,
+  td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  th {
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: var(--bg-soft);
+  }
+  tr[hidden] {
+    display: none;
+  }
+  .empty {
+    text-align: center;
+    color: var(--muted);
+    padding: 2rem;
+  }
+  .pill {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: var(--bg-soft);
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+  .pill--ok {
+    background: rgb(43 165 155 / 0.14);
+    color: var(--teal-ink);
+  }
+</style>
