@@ -1,4 +1,6 @@
 ---
+import Portrait from './Portrait.astro';
+import { coordinators, projectLead } from '../data/team';
 import { t, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -7,6 +9,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const dict = t(lang).team;
+const alt = (name: string) => dict.photoOf.replace('{name}', name);
 ---
 
 <section class="section" id="team">
@@ -16,111 +19,179 @@ const dict = t(lang).team;
       <h2>{dict.title}</h2>
     </div>
 
-    <div class="team">
-      <article class="person person--lead">
-        <!-- Replace the initials with a photo (e.g. /images/team/dorra-bechaouch.webp) when available. -->
-        <div class="avatar" aria-hidden="true">DB</div>
-        <div>
-          <p class="person__role">{dict.directorRole}</p>
-          <h3>{dict.directorName}</h3>
-          <p class="person__title">{dict.directorTitle}</p>
-        </div>
-      </article>
+    <article class="lead">
+      <Portrait slug={projectLead.slug} name={projectLead.name} alt={alt(projectLead.name)} width={320} class="lead__photo" />
+      <div class="lead__text">
+        <p class="role">{dict.leadRole}</p>
+        <h3>{dict.leadName}</h3>
+        <p class="title">{projectLead.title}</p>
+      </div>
+    </article>
 
-      <article class="person person--ambassadors">
-        <div class="avatars" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
-        <div>
-          <p class="person__role">
-            {dict.ambassadorsTitle} <span class="badge">{dict.comingSoon}</span>
-          </p>
-          <p class="person__text">{dict.ambassadorsText}</p>
-        </div>
-      </article>
-    </div>
+    <h3 class="group-title">{dict.coordinatorsTitle}</h3>
+    <ul class="grid">
+      {
+        coordinators.map((m) => (
+          <li class="member">
+            <Portrait slug={m.slug} name={m.name} alt={alt(m.name)} width={280} />
+            <div class="member__text">
+              <p class="role">{dict.coordinatorRole}</p>
+              <h4>{m.name}</h4>
+              <p class="title">{m.title}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ul>
+
+    <article class="ambassadors">
+      <div class="avatars" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+      <div>
+        <p class="role">
+          {dict.ambassadorsTitle} <span class="badge">{dict.comingSoon}</span>
+        </p>
+        <p class="ambassadors__text">{dict.ambassadorsText}</p>
+      </div>
+    </article>
   </div>
 </section>
 
 <style>
-  .team {
-    display: grid;
-    gap: 1.25rem;
-  }
-  @media (min-width: 900px) {
-    .team {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-  .person {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    padding: 1.75rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--line);
-    background: #fff;
-  }
-  @media (max-width: 479px) {
-    .person {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-  }
-  .avatar {
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-    width: 92px;
-    height: 92px;
-    border-radius: 50%;
-    background: var(--gradient);
-    color: #fff;
-    font-family: var(--font-serif);
-    font-size: 1.8rem;
-    font-weight: 700;
-    box-shadow: 0 0 0 5px #fff, 0 0 0 6px var(--line);
-  }
-  .person__role {
+  .role {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0.3rem;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--teal-ink);
   }
-  .person h3 {
-    font-size: 1.45rem;
-  }
-  .person__title,
-  .person__text {
-    margin-top: 0.35rem;
+  .title {
     color: var(--muted);
   }
 
+  /* Project lead */
+  .lead {
+    display: grid;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+    background: #fff;
+    border: 1px solid var(--line);
+    box-shadow: var(--shadow);
+  }
+  .lead :global(.lead__photo) {
+    max-width: 240px;
+  }
+  .lead h3 {
+    margin: 0.35rem 0;
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+  }
+  .lead .title {
+    font-size: 1.05rem;
+  }
+  @media (min-width: 640px) {
+    .lead {
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 2.25rem;
+      padding: 1.5rem;
+    }
+    .lead :global(.lead__photo) {
+      max-width: none;
+    }
+  }
+
+  /* Coordinators */
+  .group-title {
+    margin: clamp(2.5rem, 6vw, 3.5rem) 0 1.25rem;
+    font-size: 1.5rem;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 900px) {
+    .grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1.25rem;
+    }
+  }
+  .member {
+    display: grid;
+    align-content: start;
+    gap: 0.9rem;
+    padding: 0.75rem 0.75rem 1.1rem;
+    border-radius: var(--radius);
+    background: #fff;
+    border: 1px solid var(--line);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .member:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+  }
+  .member__text {
+    display: grid;
+    gap: 0.2rem;
+    padding-inline: 0.25rem;
+  }
+  .member h4 {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    line-height: 1.25;
+    color: var(--navy);
+  }
+  .member .role {
+    font-size: 0.68rem;
+  }
+  .member .title {
+    font-size: 0.88rem;
+  }
+
+  /* Ambassadors (coming soon) */
+  .ambassadors {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    border-radius: var(--radius);
+    border: 1px dashed #c3d2e1;
+    background: var(--bg-soft);
+  }
+  .ambassadors__text {
+    margin-top: 0.3rem;
+    color: var(--muted);
+  }
   .avatars {
     display: flex;
     flex-shrink: 0;
   }
   .avatars span {
-    width: 56px;
-    height: 56px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
-    border: 3px solid #fff;
-    background: var(--bg-soft);
+    border: 3px solid var(--bg-soft);
+    background: #fff;
     box-shadow: inset 0 0 0 1px var(--line);
   }
   .avatars span + span {
-    margin-left: -18px;
+    margin-left: -14px;
   }
-  .avatars span:nth-child(2) {
-    background: rgb(58 155 213 / 0.18);
-  }
-  .avatars span:nth-child(3) {
-    background: rgb(43 165 155 / 0.2);
+  @media (max-width: 479px) {
+    .ambassadors {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>

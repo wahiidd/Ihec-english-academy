@@ -120,9 +120,11 @@ export const en = {
   team: {
     kicker: 'Our team',
     title: 'The people behind the academy',
-    directorRole: 'Director',
-    directorName: 'Mrs. Dorra Bechaouch',
-    directorTitle: 'English Teacher & Business Communication Trainer',
+    leadRole: 'Project Lead',
+    leadName: 'Mrs. Dorra Bechaouch',
+    coordinatorsTitle: 'Project coordinators',
+    coordinatorRole: 'Project Coordinator',
+    photoOf: 'Photo of {name}',
     ambassadorsTitle: 'Student ambassadors',
     ambassadorsText:
       'Our ambassadors are IHEC students who help run the activities and support members. Their profiles will be published soon.',

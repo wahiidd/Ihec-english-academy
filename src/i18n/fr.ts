@@ -122,9 +122,11 @@ export const fr: Dict = {
   team: {
     kicker: 'Notre équipe',
     title: 'Les personnes derrière l’académie',
-    directorRole: 'Direction',
-    directorName: 'Mme Dorra Bechaouch',
-    directorTitle: 'English Teacher & Business Communication Trainer',
+    leadRole: 'Project Lead',
+    leadName: 'Mme Dorra Bechaouch',
+    coordinatorsTitle: 'Coordination du projet',
+    coordinatorRole: 'Project Coordinator',
+    photoOf: 'Photo de {name}',
     ambassadorsTitle: 'Étudiants ambassadeurs',
     ambassadorsText:
       'Nos ambassadeurs sont des étudiants de l’IHEC qui participent à l’animation des activités et accompagnent les membres. Leurs profils seront bientôt publiés.',
