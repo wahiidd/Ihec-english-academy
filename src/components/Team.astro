@@ -14,7 +14,7 @@ const alt = (name: string) => dict.photoOf.replace('{name}', name);
 
 <section class="section" id="team">
   <div class="container">
-    <div class="section-head">
+    <div class="section-head section-head--center">
       <p class="kicker">{dict.kicker}</p>
       <h2>{dict.title}</h2>
     </div>
@@ -65,10 +65,12 @@ const alt = (name: string) => dict.photoOf.replace('{name}', name);
 
   /* Project lead */
   .lead {
-    display: grid;
-    max-width: 860px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     gap: 1.5rem;
     align-items: center;
+    text-align: center;
     padding: 1.25rem;
     border-radius: var(--radius-lg);
     background: #fff;
@@ -76,36 +78,46 @@ const alt = (name: string) => dict.photoOf.replace('{name}', name);
     box-shadow: var(--shadow);
   }
   .lead :global(.lead__photo) {
-    max-width: 150px;
+    width: 150px;
   }
   .lead h3 {
     margin: 0.35rem 0;
     font-size: clamp(1.6rem, 4vw, 2.2rem);
+  }
+  .lead .role {
+    justify-content: center;
+  }
+  @media (min-width: 640px) {
+    .lead .role {
+      justify-content: flex-start;
+    }
   }
   .lead .title {
     font-size: 1.05rem;
   }
   @media (min-width: 640px) {
     .lead {
-      grid-template-columns: 160px minmax(0, 1fr);
-      gap: 2.25rem;
-      padding: 1.5rem;
+      flex-direction: row;
+      gap: 2.5rem;
+      padding: 1.75rem;
+      text-align: left;
     }
     .lead :global(.lead__photo) {
-      max-width: none;
+      width: 160px;
+      flex-shrink: 0;
     }
   }
 
   /* Coordinators */
   .group-title {
     margin: clamp(2.5rem, 6vw, 3.5rem) 0 1.25rem;
+    text-align: center;
     font-size: 1.5rem;
   }
   .grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
-    max-width: 860px;
     margin: 0;
     padding: 0;
     list-style: none;
@@ -119,6 +131,8 @@ const alt = (name: string) => dict.photoOf.replace('{name}', name);
   .member {
     display: grid;
     align-content: start;
+    justify-items: center;
+    text-align: center;
     gap: 0.9rem;
     padding: 0.75rem 0.75rem 1.1rem;
     border-radius: var(--radius);
@@ -142,7 +156,11 @@ const alt = (name: string) => dict.photoOf.replace('{name}', name);
     line-height: 1.25;
     color: var(--navy);
   }
+  .member :global(.portrait) {
+    max-width: 180px;
+  }
   .member .role {
+    justify-content: center;
     font-size: 0.68rem;
   }
   .member .title {
