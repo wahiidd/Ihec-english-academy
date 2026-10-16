@@ -9,6 +9,6 @@ the site resizes and converts them automatically). Portrait or square, face cent
 | Wahid Mensia | `wahid-mensia.jpg` |
 | Nour Ben Hadj Amor | `nour-ben-hadj-amor.jpg` |
 | Yasmine Merichko | `yasmine-merichko.jpg` |
-| Khawla Chaani | `khawla-chaani.jpg` |
+| Khawla Chaabi | `khawla-chaabi.jpg` |
 
 Until a photo is added, the site shows the person's initials.

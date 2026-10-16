@@ -19,5 +19,5 @@ export const coordinators: Member[] = [
   { slug: 'wahid-mensia', name: 'Wahid Mensia', title: 'Big Data Analytics Graduate' },
   { slug: 'nour-ben-hadj-amor', name: 'Nour Ben Hadj Amor', title: 'Marketing Graduate' },
   { slug: 'yasmine-merichko', name: 'Yasmine Merichko', title: 'Business Student' },
-  { slug: 'khawla-chaani', name: 'Khawla Chaani', title: 'Business Intelligence Student' },
+  { slug: 'khawla-chaabi', name: 'Khawla Chaabi', title: 'Business Intelligence Student' },
 ];
