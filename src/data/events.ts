@@ -44,8 +44,8 @@ export const events: AcademyEvent[] = [
   },
   {
     slug: 'info-session-2026',
-    date: '2026-11-11T11:30:00+01:00',
-    endDate: '2026-11-11T13:30:00+01:00',
+    date: '2026-11-12T11:30:00+01:00',
+    endDate: '2026-11-12T13:30:00+01:00',
     format: 'onsite',
     title: { en: 'Info session', fr: 'Session d’information' },
     description: {
