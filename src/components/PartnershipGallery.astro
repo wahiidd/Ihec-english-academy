@@ -1,0 +1,105 @@
+---
+/* Photo gallery of the British Council partnership signing (3 November 2026).
+   Photos live in src/assets/partnership/ and are resized/converted by Astro. */
+import { Image } from 'astro:assets';
+import group from '../assets/partnership/DSC_5911.jpg';
+import signing from '../assets/partnership/DSC_5896.jpg';
+import handover from '../assets/partnership/DSC_5897.jpg';
+import presentation from '../assets/partnership/DSC_5884.jpg';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const d = t(lang).gallery;
+const photos = [
+  { src: group, alt: d.alts.group, cls: 'g-main' },
+  { src: signing, alt: d.alts.signing, cls: 'g-a' },
+  { src: handover, alt: d.alts.handover, cls: 'g-b' },
+  { src: presentation, alt: d.alts.presentation, cls: 'g-c' },
+];
+---
+
+<section class="section section--soft gallery" id="partnership" aria-labelledby="gallery-title">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <p class="kicker">{d.kicker}</p>
+      <h2 id="gallery-title">{d.title}</h2>
+      <p>{d.text}</p>
+    </div>
+
+    <div class="grid">
+      {
+        photos.map((p, i) => (
+          <figure class={p.cls}>
+            <Image
+              src={p.src}
+              alt={p.alt}
+              widths={i === 0 ? [640, 960, 1400] : [480, 720, 960]}
+              sizes={i === 0 ? '(min-width: 1200px) 1160px, 100vw' : '(min-width: 900px) 380px, 50vw'}
+              loading="lazy"
+              class="photo"
+            />
+          </figure>
+        ))
+      }
+    </div>
+    <p class="credit">{d.credit}</p>
+  </div>
+</section>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+  figure {
+    margin: 0;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: var(--line);
+    aspect-ratio: 4 / 3;
+  }
+  .g-main {
+    grid-column: 1 / -1;
+    aspect-ratio: 3 / 2;
+  }
+  .g-c {
+    grid-column: 1 / -1;
+    aspect-ratio: 16 / 9;
+  }
+  @media (min-width: 900px) {
+    .grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1rem;
+    }
+    .g-main {
+      aspect-ratio: 21 / 9;
+    }
+    .g-c {
+      grid-column: auto;
+      aspect-ratio: 4 / 3;
+    }
+  }
+  figure :global(.photo) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .g-main :global(.photo) {
+    object-position: 50% 62%;
+  }
+  figure:hover :global(.photo) {
+    transform: scale(1.03);
+  }
+  .credit {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+    text-align: center;
+  }
+</style>

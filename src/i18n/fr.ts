@@ -119,6 +119,18 @@ export const fr: Dict = {
     text: 'L’IHEC English Academy travaille en partenariat avec le British Council, l’organisation internationale du Royaume-Uni pour les relations culturelles et les opportunités éducatives.',
     name: 'British Council',
   },
+  gallery: {
+    kicker: 'Partenariat',
+    title: 'Signature du partenariat avec le British Council',
+    text: 'Le 3 novembre 2026, l’IHEC Carthage et le British Council ont signé leur partenariat à l’IHEC, ouvrant une collaboration durable autour de l’anglais, de l’enseignement et des opportunités internationales.',
+    credit: 'Photos : IHEC Carthage',
+    alts: {
+      group: 'Les délégations de l’IHEC Carthage et du British Council à l’entrée de l’IHEC',
+      signing: 'Signature de l’accord de partenariat, avec le drapeau tunisien et celui du British Council',
+      handover: 'Des représentants de l’IHEC et du British Council tenant le document du partenariat',
+      presentation: 'Présentation du partenariat : « A partnership that goes beyond examinations »',
+    },
+  },
   team: {
     kicker: 'Notre équipe',
     title: 'Les personnes derrière l’académie',

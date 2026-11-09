@@ -48,7 +48,7 @@ export const events: AcademyEvent[] = [
       fr: 'Découvrez l’académie : activités, préparation à l’IELTS, adhésion et programme de l’année.',
     },
     place: { en: 'IHEC Carthage, Amphi 2', fr: 'IHEC Carthage, Amphi 2' },
-    registration: { capacity: 150 },
+    registration: { capacity: 50 },
   },
 ];
 

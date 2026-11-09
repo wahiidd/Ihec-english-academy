@@ -117,6 +117,18 @@ export const en = {
     text: 'IHEC English Academy works in partnership with the British Council, the United Kingdom’s international organisation for cultural relations and educational opportunities.',
     name: 'British Council',
   },
+  gallery: {
+    kicker: 'Partnership',
+    title: 'Signing the partnership with the British Council',
+    text: 'On 3 November 2026, IHEC Carthage and the British Council signed their partnership at IHEC, launching a long-term collaboration around English, teaching and international opportunities.',
+    credit: 'Photos: IHEC Carthage',
+    alts: {
+      group: 'IHEC Carthage and British Council delegations at the entrance of IHEC',
+      signing: 'Signing of the partnership agreement, with the Tunisian flag and the British Council flag',
+      handover: 'IHEC and British Council representatives holding the partnership document',
+      presentation: 'Presentation of the partnership: “A partnership that goes beyond examinations”',
+    },
+  },
   team: {
     kicker: 'Our team',
     title: 'The people behind the academy',
