@@ -15,11 +15,11 @@ export const site = {
   joinUrl: '',
 
   /** Contact email. Empty = "coming soon". */
-  email: '',
+  email: 'ihec.english.academy@gmail.com',
 
   /** Social media profiles. Empty = icon shown as "coming soon". */
   socials: {
-    instagram: '',
+    instagram: 'https://www.instagram.com/ihec.englishacademy/',
     facebook: '',
     linkedin: '',
     tiktok: '',

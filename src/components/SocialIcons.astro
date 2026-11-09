@@ -19,7 +19,7 @@ const labels: Record<SocialNetwork, string> = {
   tiktok: 'TikTok',
   youtube: 'YouTube',
 };
-const networks = Object.keys(labels) as SocialNetwork[];
+const networks = (Object.keys(labels) as SocialNetwork[]).filter((n) => site.socials[n]);
 ---
 
 <ul class:list={['socials', `socials--${tone}`]}>

@@ -122,7 +122,7 @@ export const fr: Dict = {
   gallery: {
     kicker: 'Partenariat',
     title: 'Signature du partenariat avec le British Council',
-    text: 'Le 3 novembre 2026, l’IHEC Carthage et le British Council ont signé leur partenariat à l’IHEC, ouvrant une collaboration durable autour de l’anglais, de l’enseignement et des opportunités internationales.',
+    text: 'Le 4 novembre 2026, l’IHEC Carthage et le British Council ont signé leur partenariat à l’IHEC, ouvrant une collaboration durable autour de l’anglais, de l’enseignement et des opportunités internationales.',
     credit: 'Photos : IHEC Carthage',
     alts: {
       group: 'Les délégations de l’IHEC Carthage et du British Council à l’entrée de l’IHEC',

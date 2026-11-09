@@ -120,7 +120,7 @@ export const en = {
   gallery: {
     kicker: 'Partnership',
     title: 'Signing the partnership with the British Council',
-    text: 'On 3 November 2026, IHEC Carthage and the British Council signed their partnership at IHEC, launching a long-term collaboration around English, teaching and international opportunities.',
+    text: 'On 4 November 2026, IHEC Carthage and the British Council signed their partnership at IHEC, launching a long-term collaboration around English, teaching and international opportunities.',
     credit: 'Photos: IHEC Carthage',
     alts: {
       group: 'IHEC Carthage and British Council delegations at the entrance of IHEC',

@@ -24,7 +24,7 @@ export interface AcademyEvent {
 export const events: AcademyEvent[] = [
   {
     slug: 'british-council-partnership',
-    date: '2026-11-03T00:00:00+01:00',
+    date: '2026-11-04T00:00:00+01:00',
     showTime: false,
     format: 'onsite',
     title: {
@@ -40,14 +40,14 @@ export const events: AcademyEvent[] = [
   },
   {
     slug: 'info-session-2026',
-    date: '2026-11-11T10:00:00+01:00',
+    date: '2026-11-11T12:00:00+01:00',
     format: 'onsite',
     title: { en: 'Info session', fr: 'Session d’information' },
     description: {
       en: 'Discover the academy: activities, IELTS preparation, membership and the programme of the year.',
       fr: 'Découvrez l’académie : activités, préparation à l’IELTS, adhésion et programme de l’année.',
     },
-    place: { en: 'IHEC Carthage, Amphi 2', fr: 'IHEC Carthage, Amphi 2' },
+    place: { en: 'IHEC Carthage, Room R5', fr: 'IHEC Carthage, salle R5' },
     registration: { capacity: 50 },
   },
 ];
