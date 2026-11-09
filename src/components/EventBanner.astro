@@ -1,7 +1,7 @@
 ---
 /* Top-of-page banner for the next event open to registration: what, when, countdown,
    seats left and a button that opens the registration dialog directly. */
-import { closesAt, events } from '../data/events';
+import { closesAt, eventTime, events } from '../data/events';
 import { t, formatDate, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -20,8 +20,7 @@ const when = event
       day: 'numeric',
       month: 'short',
       year: undefined,
-      ...(event.showTime === false ? {} : { hour: '2-digit', minute: '2-digit' }),
-    })
+    }) + (event.showTime === false ? '' : `, ${eventTime(event, lang)}`)
   : '';
 ---
 

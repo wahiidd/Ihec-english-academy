@@ -1,5 +1,5 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
-import type { AcademyEvent } from '../../data/events';
+import { eventTime, type AcademyEvent } from '../../data/events';
 import { formatDate, type Lang } from '../../i18n/utils';
 
 const NAVY = rgb(15 / 255, 42 / 255, 92 / 255);
@@ -98,7 +98,7 @@ export const ticketPdf = async (t: TicketPdf) => {
     [c.date, formatDate(t.event.date, t.lang, { weekday: 'long' })],
   ];
   if (t.event.showTime !== false) {
-    rows.push([c.time, formatDate(t.event.date, t.lang, { day: undefined, month: undefined, year: undefined, hour: '2-digit', minute: '2-digit' })]);
+    rows.push([c.time, eventTime(t.event, t.lang)]);
   }
   if (t.event.place) rows.push([c.place, t.event.place[t.lang]]);
 

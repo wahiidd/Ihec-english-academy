@@ -6,11 +6,15 @@
  *   Registrations also close as soon as the capacity is reached.
  * - `showTime: false` displays the date only (for announcements without a public time).
  */
+import { formatDate, type Lang } from '../i18n/utils';
+
 export type EventFormat = 'onsite' | 'online' | 'hybrid';
 
 export interface AcademyEvent {
   slug: string;
   date: string;
+  /** Optional end time (same day), shown as a time range. */
+  endDate?: string;
   showTime?: boolean;
   format: EventFormat;
   title: { en: string; fr: string };
@@ -40,17 +44,25 @@ export const events: AcademyEvent[] = [
   },
   {
     slug: 'info-session-2026',
-    date: '2026-11-11T12:00:00+01:00',
+    date: '2026-11-11T11:30:00+01:00',
+    endDate: '2026-11-11T13:30:00+01:00',
     format: 'onsite',
     title: { en: 'Info session', fr: 'Session d’information' },
     description: {
       en: 'Discover the academy: activities, IELTS preparation, membership and the programme of the year.',
       fr: 'Découvrez l’académie : activités, préparation à l’IELTS, adhésion et programme de l’année.',
     },
-    place: { en: 'IHEC Carthage, Room R5', fr: 'IHEC Carthage, salle R5' },
-    registration: { capacity: 50 },
+    place: { en: 'IHEC Carthage, Amphi 1', fr: 'IHEC Carthage, Amphi 1' },
+    registration: { capacity: 150 },
   },
 ];
+
+const clock = (iso: string, lang: Lang) =>
+  formatDate(iso, lang, { day: undefined, month: undefined, year: undefined, hour: '2-digit', minute: '2-digit' });
+
+/** "11:30–13:30" (or "11:30" without an end time); empty when the time is not public. */
+export const eventTime = (e: AcademyEvent, lang: Lang) =>
+  e.showTime === false ? '' : e.endDate ? `${clock(e.date, lang)}–${clock(e.endDate, lang)}` : clock(e.date, lang);
 
 export const findEvent = (slug: string) => events.find((e) => e.slug === slug);
 

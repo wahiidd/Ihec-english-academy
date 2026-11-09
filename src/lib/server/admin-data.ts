@@ -1,4 +1,4 @@
-import { events, levelLabel, type AcademyEvent } from '../../data/events';
+import { eventTime, events, levelLabel, type AcademyEvent } from '../../data/events';
 import { formatDate } from '../../i18n/utils';
 import { listRegistrations, type Registration } from './db';
 
@@ -12,7 +12,7 @@ export const adminEvents = () => {
 };
 
 export const eventLabel = (e: AcademyEvent) =>
-  `${e.title.fr} — ${formatDate(e.date, 'fr', { weekday: 'short', ...(e.showTime === false ? {} : { hour: '2-digit', minute: '2-digit' }) })}`;
+  `${e.title.fr} — ${formatDate(e.date, 'fr', { weekday: 'short' })}${e.showTime === false ? '' : `, ${eventTime(e, 'fr')}`}`;
 
 export interface SheetRow {
   code: string;

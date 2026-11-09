@@ -3,6 +3,7 @@ import AdminShell from '../../components/AdminShell.astro';
 import { adminConfigured, isAdmin } from '../../lib/server/auth';
 import { countsByEvent } from '../../lib/server/db';
 import { adminEvents, sheet, type Sheet } from '../../lib/server/admin-data';
+import { eventTime } from '../../data/events';
 import { formatDate } from '../../i18n/utils';
 
 export const prerender = false;
@@ -66,7 +67,7 @@ const json = (v: unknown) => JSON.stringify(v).replace(/</g, '\\u003c');
           <div>
             <h1>{current.title.fr}</h1>
             <p>
-              {formatDate(current.date, 'fr', { weekday: 'long', ...(current.showTime === false ? {} : { hour: '2-digit', minute: '2-digit' }) })}
+              {formatDate(current.date, 'fr', { weekday: 'long' })}{current.showTime !== false && <>, {eventTime(current, 'fr')}</>}
               {current.place && <> · {current.place.fr}</>}
             </p>
           </div>

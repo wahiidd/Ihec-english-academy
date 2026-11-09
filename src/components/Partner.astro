@@ -1,4 +1,6 @@
 ---
+import { Image } from 'astro:assets';
+import ieltsLogo from '../assets/british-council-ielts.png';
 import { t, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -16,14 +18,13 @@ const dict = t(lang).partner;
       <h2 id="partner-title">{dict.title}</h2>
       <p>{dict.text}</p>
     </div>
-    <!-- British Council stays as text: replace with its official logo only once usage is authorised. -->
     <div class="partner__mark">
       <picture>
         <source srcset="/images/logo-full.webp" type="image/webp" />
         <img class="partner__logo" src="/images/logo-full.png" alt="IHEC Carthage English Academy" width="900" height="470" loading="lazy" />
       </picture>
       <span class="partner__plus" aria-hidden="true">×</span>
-      <span class="partner__name">{dict.name}</span>
+      <Image src={ieltsLogo} alt="British Council IELTS" width={200} densities={[1, 2]} class="partner__bc" loading="lazy" />
     </div>
   </div>
 </section>
@@ -74,10 +75,9 @@ const dict = t(lang).partner;
     font-size: 1.4rem;
     color: var(--teal-ink);
   }
-  .partner__name {
-    font-family: var(--font-serif);
-    font-size: 1.7rem;
-    font-weight: 700;
-    color: var(--navy);
+  .partner__mark :global(.partner__bc) {
+    width: min(70%, 170px);
+    height: auto;
+    margin-inline: auto;
   }
 </style>

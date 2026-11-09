@@ -1,6 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { findEvent } from '../../data/events';
+import { eventTime, findEvent } from '../../data/events';
 import { findByCode } from '../../lib/server/db';
 import { isTicketCode } from '../../lib/server/tickets';
 import { t, formatDate, homePath } from '../../i18n/utils';
@@ -35,7 +35,7 @@ Astro.response.headers.set('Cache-Control', 'private, no-store');
               <div><dt>{dict.holder}</dt><dd>{reg.first_name} {reg.last_name}</dd></div>
               <div><dt>{dict.date}</dt><dd>{formatDate(event.date, lang, { weekday: 'long' })}</dd></div>
               {event.showTime !== false && (
-                <div><dt>{dict.time}</dt><dd>{formatDate(event.date, lang, { day: undefined, month: undefined, year: undefined, hour: '2-digit', minute: '2-digit' })}</dd></div>
+                <div><dt>{dict.time}</dt><dd>{eventTime(event, lang)}</dd></div>
               )}
               {event.place && <div><dt>{dict.place}</dt><dd>{event.place[lang]}</dd></div>}
             </dl>

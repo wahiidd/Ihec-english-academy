@@ -1,4 +1,4 @@
-import type { AcademyEvent } from '../../data/events';
+import { eventTime, type AcademyEvent } from '../../data/events';
 import { formatDate, type Lang } from '../../i18n/utils';
 
 const copy = {
@@ -55,7 +55,7 @@ export const ticketEmail = (m: TicketEmail) => {
   const c = copy[m.lang];
   const title = m.event.title[m.lang];
   const day = formatDate(m.event.date, m.lang, { weekday: 'long' });
-  const time = formatDate(m.event.date, m.lang, { day: undefined, month: undefined, year: undefined, hour: '2-digit', minute: '2-digit' });
+  const time = eventTime(m.event, m.lang);
   const place = m.event.place?.[m.lang] ?? '';
   const name = escape(m.firstName);
   const shortCode = m.code.slice(0, 8).toUpperCase();

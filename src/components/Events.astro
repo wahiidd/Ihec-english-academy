@@ -1,7 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import RegistrationDialog from './RegistrationDialog.astro';
-import { closesAt, events } from '../data/events';
+import { closesAt, eventTime, events } from '../data/events';
 import { t, formatDate, launchDateLabel, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -40,9 +40,8 @@ const lastDay = (iso: string) => formatDate(new Date(Date.parse(iso) - 1).toISOS
                 <h3>{event.title[lang]}</h3>
                 {event.description && <p>{event.description[lang]}</p>}
                 <p class="event__meta">
-                  {event.showTime === false
-                    ? formatDate(event.date, lang, { weekday: 'long' })
-                    : formatDate(event.date, lang, { weekday: 'long', hour: '2-digit', minute: '2-digit' })}
+                  {formatDate(event.date, lang, { weekday: 'long' })}
+                  {event.showTime !== false && <> · {eventTime(event, lang)}</>}
                   {event.place && <> · {event.place[lang]}</>}
                 </p>
                 {event.note && <p class="event__note">{event.note[lang]}</p>}
