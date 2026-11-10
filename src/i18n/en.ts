@@ -158,6 +158,8 @@ export const en = {
     closed: 'Registration closed',
     loading: 'Checking seats…',
     unavailable: 'Seat count unavailable',
+    access: 'Entry by registration only',
+    steps: ['Register online', 'Get your QR code by e\u2011mail', 'Show it at the entrance on the day'],
   },
   banner: {
     label: 'Next event',

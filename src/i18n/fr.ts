@@ -160,6 +160,8 @@ export const fr: Dict = {
     closed: 'Inscriptions closes',
     loading: 'Vérification des places…',
     unavailable: 'Nombre de places indisponible',
+    access: 'Accès sur inscription uniquement',
+    steps: ['Inscrivez-vous en ligne', 'Recevez votre QR code par e\u2011mail', 'Présentez-le à l’entrée le jour J'],
   },
   banner: {
     label: 'Prochain événement',

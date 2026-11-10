@@ -45,6 +45,19 @@ const lastDay = (iso: string) => formatDate(new Date(Date.parse(iso) - 1).toISOS
                   {event.place && <> · {event.place[lang]}</>}
                 </p>
                 {event.note && <p class="event__note">{event.note[lang]}</p>}
+                {event.registration && (
+                  <div class="access">
+                    <p class="access__title">{dict.access}</p>
+                    <ol class="access__steps">
+                      {(['form', 'mail', 'qr'] as const).map((icon, i) => (
+                        <li>
+                          <span class="access__icon" aria-hidden="true"><Icon name={icon} size={20} /></span>
+                          <span class="access__label"><span class="access__n">{i + 1}</span>{dict.steps[i]}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                )}
               </div>
 
               {event.registration && (
@@ -245,6 +258,75 @@ const lastDay = (iso: string) => formatDate(new Date(Date.parse(iso) - 1).toISOS
     margin-top: 0.25rem;
     font-size: 0.85rem;
     font-style: italic;
+  }
+
+  .access {
+    width: 100%;
+    margin-top: 0.75rem;
+    padding-top: 0.9rem;
+    border-top: 1px solid var(--line);
+  }
+  .access__title {
+    margin-bottom: 0.7rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-ink) !important;
+  }
+  .access__steps {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .access__steps li {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .access__icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgb(43 165 155 / 0.12);
+    color: var(--teal-ink);
+  }
+  .access__label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .access__n {
+    margin-right: 0.35rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  @media (min-width: 640px) {
+    .access__steps {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0;
+    }
+    .access__steps li {
+      position: relative;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding-right: 1rem;
+    }
+    /* Thin connector between the step icons */
+    .access__steps li:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 19px;
+      left: 46px;
+      right: 8px;
+      border-top: 1.5px dashed rgb(26 122 114 / 0.35);
+    }
   }
 
   .reg {
