@@ -1,0 +1,49 @@
+---
+import Page from '../Page.astro';
+import Portrait from '../../Portrait.astro';
+import { coordinators, projectLead } from '../../../data/team';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const tm = d.team;
+const alt = (name: string) => tm.photoOf.replace('{name}', name);
+const tilts = ['-2deg', '1.5deg', '-1deg', '2deg'];
+---
+
+<Page {...meta} variant="paper" class="team-page">
+  <p class="kicker-sm ink" style="--d: 0">{tm.kicker}</p>
+  <h2 class="h-title h-title--sm ink" style="--d: 1">{tm.title}</h2>
+  <div class="team-lead rise" style="--d: 2">
+    <figure class="polaroid" style="--r: -2deg">
+      <span class="tape tape--sm" aria-hidden="true"></span>
+      <Portrait slug={projectLead.slug} name={projectLead.name} alt={alt(projectLead.name)} width={150} />
+    </figure>
+    <div>
+      <p class="kicker-sm">{tm.leadRole}</p>
+      <h3>{tm.leadName}</h3>
+      <p class="team-lead__title">{projectLead.title}</p>
+    </div>
+  </div>
+  <p class="team-page__group ink" style="--d: 3">{tm.coordinatorsTitle}</p>
+  <ul class="team-grid">
+    {
+      coordinators.map((m, n) => (
+        <li class="rise" style={`--d: ${n + 4}`}>
+          <figure class="polaroid" style={`--r: ${tilts[n]}`}>
+            <Portrait slug={m.slug} name={m.name} alt={alt(m.name)} width={120} />
+            <figcaption>
+              <strong>{m.name}</strong>
+              <span>{m.title}</span>
+            </figcaption>
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="note ink" style="--d: 8">{d.sketch.meet}</p>
+</Page>

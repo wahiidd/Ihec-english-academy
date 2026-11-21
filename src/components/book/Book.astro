@@ -1,0 +1,415 @@
+---
+/* The whole home page as a sketchbook.
+   Desktop: a two-page spread that turns its leaves in 3D (arrows, keyboard, page corners, contents).
+   Mobile: full-screen pages you swipe horizontally, with a bottom navigation bar.
+   Without JavaScript the pages simply stack, so every word stays readable and indexable. */
+import '@fontsource/caveat/600.css';
+import '@fontsource/caveat/700.css';
+import '../../styles/book.css';
+import Icon from '../Icon.astro';
+import RegistrationDialog from '../RegistrationDialog.astro';
+import Cover from './pages/Cover.astro';
+import InsideCover from './pages/InsideCover.astro';
+import TitlePage from './pages/TitlePage.astro';
+import Contents from './pages/Contents.astro';
+import About from './pages/About.astro';
+import Pillars from './pages/Pillars.astro';
+import Partner from './pages/Partner.astro';
+import Photos from './pages/Photos.astro';
+import Ielts from './pages/Ielts.astro';
+import WhichTest from './pages/WhichTest.astro';
+import Pathway from './pages/Pathway.astro';
+import Prep from './pages/Prep.astro';
+import Registration from './pages/Registration.astro';
+import Benefit from './pages/Benefit.astro';
+import Events from './pages/Events.astro';
+import Activities from './pages/Activities.astro';
+import Team from './pages/Team.astro';
+import Faq from './pages/Faq.astro';
+import Contact from './pages/Contact.astro';
+import Notes from './pages/Notes.astro';
+import BackCover from './pages/BackCover.astro';
+import { upcomingEvents } from '../../data/events';
+import { t, homePath, otherLang, type Lang } from '../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const d = t(lang);
+const ch = d.book.chapters;
+const hasEvents = upcomingEvents().length > 0;
+const hasRegistration = upcomingEvents().some((e) => e.registration);
+
+type Entry = { C: any; chapter?: keyof typeof ch; props?: Record<string, unknown> };
+const entries: Entry[] = [
+  { C: Cover },
+  { C: InsideCover },
+  { C: TitlePage },
+  { C: Contents },
+  { C: About, chapter: 'about' },
+  { C: Pillars },
+  { C: Partner, chapter: 'partner' },
+  { C: Photos },
+  { C: Ielts, chapter: 'ielts' },
+  { C: WhichTest },
+  { C: Pathway, chapter: 'pathway' },
+  { C: Prep },
+  { C: Registration, chapter: 'registration' },
+  { C: Benefit },
+  ...(hasEvents ? [{ C: Events, chapter: 'events' as const }] : []),
+  { C: Activities, chapter: 'activities' },
+  { C: Team, chapter: 'team' },
+  { C: Faq, chapter: 'faq', props: { from: 0, to: 4, first: true } },
+  { C: Faq, props: { from: 4, to: 7 } },
+  { C: Contact, chapter: 'contact' },
+];
+// A book has an even number of pages: pad with a notes page before the back cover if needed.
+if ((entries.length + 1) % 2 !== 0) entries.push({ C: Notes });
+entries.push({ C: BackCover });
+
+// Running heads: each page carries the name of the chapter it belongs to.
+let current = d.hero.coverTitle;
+const pages = entries.map((e, index) => {
+  if (e.chapter) current = ch[e.chapter];
+  return { ...e, meta: { index, id: e.chapter ?? (index === 0 ? 'cover' : undefined), head: index < 4 ? d.hero.coverTitle : current } };
+});
+const chapters = pages.filter((p) => p.chapter).map((p) => ({ id: p.chapter!, label: ch[p.chapter!], page: p.meta.index }));
+const contentsIndex = pages.findIndex((p) => p.C === Contents);
+pages[contentsIndex].props = { chapters };
+
+const leaves: (typeof pages)[] = [];
+for (let i = 0; i < pages.length; i += 2) leaves.push([pages[i], pages[i + 1]]);
+const other = otherLang(lang);
+---
+
+<script is:inline>
+  // Before paint: pick the reading mode so the first frame is already right.
+  (function () {
+    var h = document.documentElement;
+    h.classList.add('bk-js');
+    var desk = window.matchMedia('(min-width: 960px) and (min-height: 600px)').matches;
+    h.classList.add(desk ? 'bk-desktop' : 'bk-mobile');
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) h.classList.add('bk-anim');
+  })();
+</script>
+
+<a class="skip-link" href="#cover">{d.nav.skip}</a>
+
+<header class="bk-header">
+  <a class="bk-brand" href={homePath(lang)} aria-label={d.nav.home} data-goto="cover">
+    <img src="/images/emblem.png" alt="" width="240" height="192" />
+    <span><span class="bk-brand__ihec">IHEC Carthage</span><span class="bk-brand__name">English <em>Academy</em></span></span>
+  </a>
+  <button class="bk-toc-btn" type="button" aria-expanded="false" aria-controls="bk-toc" data-toc-btn>
+    <Icon name="menu" size={18} />
+    <span>{d.sketch.contents}</span>
+  </button>
+  <a class="bk-lang" href={homePath(other)} hreflang={other} lang={other} title={d.nav.switchLabel} data-lang-switch>
+    <Icon name="globe" size={16} /><span>{d.nav.switchShort}</span>
+  </a>
+</header>
+
+<nav class="bk-toc" id="bk-toc" aria-label={d.sketch.contents} data-toc hidden>
+  <div class="bk-toc__sheet">
+    <p class="bk-toc__title">{d.sketch.contents}</p>
+    <ol>
+      <li><a href="#cover" data-goto="cover"><span class="bk-toc__n">—</span>{d.hero.coverTitle}</a></li>
+      {
+        chapters.map((c, i) => (
+          <li>
+            <a href={`#${c.id}`} data-goto={c.id}>
+              <span class="bk-toc__n">{String(i + 1).padStart(2, '0')}</span>
+              {c.label}
+              <span class="bk-toc__p">{c.page}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</nav>
+
+<main id="main" class="bk-stage" data-stage>
+  <div class="bk-scaler" data-scaler>
+    <div class="bk-book" data-book data-total={pages.length}>
+      {
+        leaves.map((leaf, i) => (
+          <div class="leaf" style={`--i: ${i}`} data-leaf={i}>
+            {leaf.map((p) => {
+              const C = p.C;
+              return <C lang={lang} meta={p.meta} {...(p.props ?? {})} />;
+            })}
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  <button class="bk-arrow bk-arrow--prev" type="button" data-nav="prev" aria-label={d.sketch.prev}>
+    <span aria-hidden="true">‹</span>
+  </button>
+  <button class="bk-arrow bk-arrow--next" type="button" data-nav="next" aria-label={d.sketch.next}>
+    <span aria-hidden="true">›</span>
+  </button>
+  <p class="bk-status" aria-live="polite">
+    <span class="bk-status__chapter" data-status-chapter>{d.hero.coverTitle}</span>
+    <span class="bk-status__page" data-status-page></span>
+  </p>
+  <div class="bk-progress" aria-hidden="true"><span data-progress></span></div>
+</main>
+
+<nav class="bk-bar" aria-label={d.sketch.contents}>
+  <button type="button" data-nav="prev" aria-label={d.sketch.prev}><span aria-hidden="true">‹</span></button>
+  <button class="bk-bar__mid" type="button" data-toc-btn aria-controls="bk-toc" aria-expanded="false">
+    <span class="bk-bar__chapter" data-status-chapter>{d.hero.coverTitle}</span>
+    <span class="bk-bar__page" data-status-page></span>
+  </button>
+  <button type="button" data-nav="next" aria-label={d.sketch.next}><span aria-hidden="true">›</span></button>
+</nav>
+
+{hasRegistration && <RegistrationDialog lang={lang} />}
+
+<script define:vars={{ pageWord: d.sketch.page, ofWord: d.sketch.of, coverTitle: d.hero.coverTitle }}>
+  window.__bk = { pageWord, ofWord, coverTitle };
+</script>
+
+<script>
+  type BK = { pageWord: string; ofWord: string; coverTitle: string };
+  const words = (window as unknown as { __bk: BK }).__bk;
+  const html = document.documentElement;
+  const book = document.querySelector<HTMLElement>('[data-book]')!;
+  const scaler = document.querySelector<HTMLElement>('[data-scaler]')!;
+  const leaves = [...book.querySelectorAll<HTMLElement>('[data-leaf]')];
+  const faces = [...book.querySelectorAll<HTMLElement>('.face')];
+  const total = faces.length;
+  const L = leaves.length;
+  const PW = 560;
+  const PH = 760;
+  const animate = html.classList.contains('bk-anim');
+  const desktopQuery = window.matchMedia('(min-width: 960px) and (min-height: 600px)');
+  let desktop = desktopQuery.matches;
+  let spread = 0; // number of turned leaves (desktop)
+  let page = 0; // current page (mobile)
+
+  /* ---------- helpers ---------- */
+  const pageOfId = (id: string) => faces.findIndex((f) => f.id === id);
+  const chapterOf = (p: number) => faces[p]?.getAttribute('aria-label') || words.coverTitle;
+  const visiblePages = () => (desktop ? [2 * spread - 1, 2 * spread].filter((p) => p >= 0 && p < total) : [page]);
+
+  /* ---------- writing: ink, drawings and the typed title ---------- */
+  const typed = new WeakSet<HTMLElement>();
+  const write = (face: HTMLElement | undefined) => {
+    if (!face || face.classList.contains('is-written')) return;
+    face.classList.add('is-written');
+    const type = face.querySelector<HTMLElement>('.type');
+    if (type && animate && !typed.has(type)) {
+      typed.add(type);
+      const text = type.querySelector<HTMLElement>('.type__text')!;
+      const accent = type.querySelector<HTMLElement>('.type__accent')!;
+      const caret = type.querySelector<HTMLElement>('.type__caret');
+      const start = `${type.dataset.type} `;
+      const all = start + (type.dataset.accent ?? '');
+      text.textContent = '';
+      accent.textContent = '';
+      face.classList.add('is-typing');
+      let i = 0;
+      const step = () => {
+        i += 1;
+        text.textContent = all.slice(0, Math.min(i, start.length));
+        accent.textContent = i > start.length ? all.slice(start.length, i) : '';
+        if (i < all.length) setTimeout(step, 24 + Math.random() * 26);
+        else {
+          face.classList.remove('is-typing');
+          setTimeout(() => caret?.remove(), 2400);
+        }
+      };
+      step();
+    }
+  };
+
+  /* ---------- status (chapter, page, progress, hash) ---------- */
+  const status = () => {
+    const vis = visiblePages();
+    const last = vis[vis.length - 1];
+    const label = chapterOf(last);
+    const pageText = vis.filter((p) => p > 0).length
+      ? `${words.pageWord} ${vis.filter((p) => p > 0).join('–')} ${words.ofWord} ${total - 1}`
+      : '';
+    document.querySelectorAll('[data-status-chapter]').forEach((el) => (el.textContent = label));
+    document.querySelectorAll('[data-status-page]').forEach((el) => (el.textContent = pageText));
+    const progress = document.querySelector<HTMLElement>('[data-progress]');
+    if (progress) progress.style.transform = `scaleX(${last / (total - 1)})`;
+    const prevOff = desktop ? spread === 0 : page === 0;
+    const nextOff = desktop ? spread === L : page === total - 1;
+    document.querySelectorAll<HTMLButtonElement>('button[data-nav="prev"]').forEach((b) => (b.disabled = prevOff));
+    document.querySelectorAll<HTMLButtonElement>('button[data-nav="next"]').forEach((b) => (b.disabled = nextOff));
+    // Deep link to the nearest chapter shown.
+    let id = '';
+    for (let p = last; p >= 0; p--) if (faces[p].id) { id = faces[p].id; break; }
+    if (id) history.replaceState(null, '', id === 'cover' ? location.pathname : `#${id}`);
+  };
+
+  /* ---------- desktop: turning leaves ---------- */
+  const fitDesktop = () => {
+    const header = 64;
+    const room = 150; // arrows + status
+    const s = Math.min((innerWidth - room) / (PW * 2), (innerHeight - header - 92) / PH, 1.25);
+    scaler.style.setProperty('--s', String(Math.max(0.5, s)));
+  };
+
+  const applyDesktop = (target: number, instant = false) => {
+    target = Math.max(0, Math.min(L, target));
+    const from = spread;
+    const forward = target > from;
+    const changed: number[] = [];
+    leaves.forEach((leaf, i) => {
+      const flipped = i < target;
+      if (leaf.classList.contains('is-flipped') !== flipped) changed.push(i);
+    });
+    // Order turning leaves so they cascade naturally (closest to the reader first).
+    if (!forward) changed.reverse();
+    const distance = changed.length;
+    changed.forEach((i, k) => {
+      const leaf = leaves[i];
+      const delay = instant || !animate ? 0 : Math.min(k * 90, 600);
+      leaf.style.transitionDelay = `${delay}ms`;
+      leaf.style.zIndex = String(L * 2 + k);
+      leaf.classList.add('is-turning');
+      leaf.classList.toggle('is-flipped', i < target);
+      const done = () => {
+        leaf.classList.remove('is-turning');
+        leaf.style.transitionDelay = '';
+        restack();
+      };
+      if (instant || !animate) done();
+      else setTimeout(done, 950 + delay);
+    });
+    spread = target;
+    book.classList.toggle('at-start', spread === 0);
+    book.classList.toggle('at-end', spread === L);
+    faces.forEach((f, p) => {
+      const shown = visiblePages().includes(p);
+      f.toggleAttribute('inert', !shown);
+      f.setAttribute('aria-hidden', String(!shown));
+    });
+    const wait = instant || !animate ? 0 : Math.min(450 + distance * 90, 1100);
+    setTimeout(() => visiblePages().forEach((p) => write(faces[p])), wait);
+    status();
+  };
+
+  const restack = () => {
+    leaves.forEach((leaf, i) => {
+      if (leaf.classList.contains('is-turning')) return;
+      leaf.style.zIndex = String(leaf.classList.contains('is-flipped') ? i + 1 : L - i);
+    });
+  };
+
+  /* ---------- mobile: swipe track ---------- */
+  let scrollTimer = 0;
+  const onTrackScroll = () => {
+    clearTimeout(scrollTimer);
+    scrollTimer = window.setTimeout(() => {
+      const p = Math.round(book.scrollLeft / book.clientWidth);
+      if (p !== page) {
+        page = p;
+        status();
+      }
+      write(faces[page]);
+    }, 80);
+  };
+  const goMobile = (p: number, instant = false) => {
+    page = Math.max(0, Math.min(total - 1, p));
+    book.scrollTo({ left: page * book.clientWidth, behavior: instant || !animate ? 'auto' : 'smooth' });
+    faces[page].scrollTop = 0;
+    if (instant) write(faces[page]);
+    status();
+  };
+
+  /* ---------- shared navigation ---------- */
+  const go = (p: number, instant = false) => {
+    if (desktop) applyDesktop(Math.ceil(p / 2), instant);
+    else goMobile(p, instant);
+  };
+  const next = () => (desktop ? applyDesktop(spread + 1) : goMobile(page + 1));
+  const prev = () => (desktop ? applyDesktop(spread - 1) : goMobile(page - 1));
+  const current = () => (desktop ? Math.max(0, 2 * spread - 1) : page);
+
+  document.addEventListener('click', (e) => {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-nav], [data-goto], [data-corner]');
+    if (!el) return;
+    if (el.dataset.goto) {
+      const p = pageOfId(el.dataset.goto);
+      if (p < 0) return;
+      e.preventDefault();
+      closeToc();
+      go(p);
+    } else {
+      const dir = el.dataset.nav ?? el.dataset.corner;
+      if (dir === 'next') next();
+      if (dir === 'prev') prev();
+    }
+  });
+  document.addEventListener('keydown', (e) => {
+    if ((e.target as HTMLElement).closest('input, textarea, select, dialog[open]')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); next(); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prev(); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(total - 1);
+    if (e.key === 'Escape') closeToc();
+  });
+
+  /* ---------- contents panel ---------- */
+  const toc = document.querySelector<HTMLElement>('[data-toc]')!;
+  const tocButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-toc-btn]')];
+  const setToc = (open: boolean) => {
+    toc.hidden = !open;
+    tocButtons.forEach((b) => b.setAttribute('aria-expanded', String(open)));
+    if (open) toc.querySelector<HTMLAnchorElement>('a')?.focus();
+  };
+  const closeToc = () => !toc.hidden && setToc(false);
+  tocButtons.forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); setToc(toc.hidden); }));
+  toc.addEventListener('click', (e) => { if (e.target === toc) setToc(false); });
+
+  /* ---------- language switch keeps the chapter ---------- */
+  document.querySelectorAll<HTMLAnchorElement>('[data-lang-switch], .cover__lang').forEach((a) =>
+    a.addEventListener('click', () => { if (location.hash) a.href = a.pathname + location.hash; }),
+  );
+
+  /* ---------- mode setup ---------- */
+  const setup = (keep = current()) => {
+    desktop = desktopQuery.matches;
+    html.classList.toggle('bk-desktop', desktop);
+    html.classList.toggle('bk-mobile', !desktop);
+    if (desktop) {
+      fitDesktop();
+      faces.forEach((f) => f.removeAttribute('inert'));
+      leaves.forEach((l) => l.classList.remove('is-flipped'));
+      spread = 0;
+      applyDesktop(Math.ceil(keep / 2), true);
+      restack();
+    } else {
+      faces.forEach((f) => { f.removeAttribute('inert'); f.removeAttribute('aria-hidden'); });
+      requestAnimationFrame(() => goMobile(keep, true));
+    }
+  };
+
+  book.addEventListener('scroll', () => !desktop && onTrackScroll(), { passive: true });
+  addEventListener('resize', () => desktop && fitDesktop());
+
+  const startId = decodeURIComponent(location.hash.slice(1));
+  const startPage = startId ? Math.max(0, pageOfId(startId)) : 0;
+  setup(startPage);
+  desktopQuery.removeEventListener('change', setup);
+  desktopQuery.addEventListener('change', () => setup());
+
+  // Mobile: write pages as they come into view.
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(
+      (entries) => entries.forEach((en) => !desktop && en.isIntersecting && write(en.target as HTMLElement)),
+      { root: book, threshold: 0.55 },
+    );
+    faces.forEach((f) => io.observe(f));
+  }
+</script>

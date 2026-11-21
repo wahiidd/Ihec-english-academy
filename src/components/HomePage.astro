@@ -1,21 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
-import EventBanner from './EventBanner.astro';
-import Header from './Header.astro';
-import Hero from './Hero.astro';
-import About from './About.astro';
-import Activities from './Activities.astro';
-import Certifications from './Certifications.astro';
-import Pathway from './Pathway.astro';
-import IeltsRegistration from './IeltsRegistration.astro';
-import Faq from './Faq.astro';
-import BookProgress from './BookProgress.astro';
-import Partner from './Partner.astro';
-import PartnershipGallery from './PartnershipGallery.astro';
-import Team from './Team.astro';
-import Events from './Events.astro';
-import Footer from './Footer.astro';
-import { t, type Lang } from '../i18n/utils';
+import Book from './book/Book.astro';
+import type { Lang } from '../i18n/utils';
 
 interface Props {
   lang: Lang;
@@ -25,59 +11,5 @@ const { lang } = Astro.props;
 ---
 
 <Base lang={lang}>
-  <a class="skip-link" href="#main">{t(lang).nav.skip}</a>
-  <EventBanner lang={lang} />
-  <Header lang={lang} />
-  <main id="main">
-    <Hero lang={lang} />
-    <About lang={lang} />
-    <Partner lang={lang} />
-    <PartnershipGallery lang={lang} />
-    <Certifications lang={lang} />
-    <Pathway lang={lang} />
-    <IeltsRegistration lang={lang} />
-    <Activities lang={lang} />
-    <Team lang={lang} />
-    <Events lang={lang} />
-    <Faq lang={lang} />
-  </main>
-  <Footer lang={lang} />
-  <BookProgress lang={lang} />
+  <Book lang={lang} />
 </Base>
-
-<script>
-  // Sections rise in as they enter the screen; their titles are "written" left to right.
-  if (document.documentElement.classList.contains('book-anim') && 'IntersectionObserver' in window) {
-    const groups = [
-      '.steps > li', '.skills > li', '.grid > *', '.cards > li', '.which__grid > *', '.reg-grid > *',
-      '.bottom > *', '.faq__list > details', '.pillars > li', '.events > li',
-    ];
-    const singles = ['.section-head', '.about__body', '.partner__text', '.partner__mark', '.lead', '.prep', '.which__title', '.which__note', '.group-title', '.contact', '.ielts__intro', '.credit'];
-    const sections = [...document.querySelectorAll<HTMLElement>('main > section:not(:first-child), footer')];
-    const targets: HTMLElement[] = [];
-    for (const section of sections) {
-      section.querySelectorAll<HTMLElement>(singles.join(',')).forEach((el) => targets.push(el));
-      for (const sel of groups) section.querySelectorAll<HTMLElement>(sel).forEach((el, i) => {
-        el.style.setProperty('--i', String(Math.min(i, 6)));
-        targets.push(el);
-      });
-    }
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          const el = entry.target as HTMLElement;
-          el.classList.add('in');
-          io.unobserve(el);
-          // Hand transitions back to the element (hover effects) once revealed.
-          setTimeout(() => el.classList.remove('rv'), 1600);
-        }
-      },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.12 },
-    );
-    for (const el of new Set(targets)) {
-      el.classList.add('rv');
-      io.observe(el);
-    }
-  }
-</script>

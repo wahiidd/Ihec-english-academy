@@ -1,0 +1,33 @@
+---
+import Page from '../Page.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+  chapters: { id: string; label: string; page: number }[];
+}
+const { lang, meta, chapters } = Astro.props;
+const d = t(lang);
+---
+
+<Page {...meta} variant="paper" class="contents">
+  <h2 class="h-title ink" style="--d: 0">{d.sketch.contents}</h2>
+  <svg class="draw underline" viewBox="0 0 220 14" aria-hidden="true" style="--d: 1">
+    <path pathLength="1" d="M2 9 C 50 3, 120 13, 218 6" />
+  </svg>
+  <ol class="toc">
+    {
+      chapters.map((c, i) => (
+        <li class="rise" style={`--d: ${Math.min(i + 1, 8)}`}>
+          <a href={`#${c.id}`} data-goto={c.id}>
+            <span class="toc__n">{String(i + 1).padStart(2, '0')}</span>
+            <span class="toc__label">{c.label}</span>
+            <span class="toc__dots" aria-hidden="true"></span>
+            <span class="toc__page">{c.page}</span>
+          </a>
+        </li>
+      ))
+    }
+  </ol>
+</Page>

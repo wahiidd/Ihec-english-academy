@@ -1,0 +1,43 @@
+---
+import Page from '../Page.astro';
+import Icon from '../../Icon.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const title = `${d.hero.titleStart} ${d.hero.titleAccent}`;
+---
+
+<Page {...meta} variant="ruled" class="title-page">
+  <p class="kicker-sm ink" style="--d: 0">{d.hero.eyebrow}</p>
+  <h1 class="title-page__h1">
+    <span class="visually-hidden">{title}</span>
+    <span class="type" aria-hidden="true" data-type={d.hero.titleStart} data-accent={d.hero.titleAccent}>
+      <span class="type__text">{d.hero.titleStart} </span><em class="type__accent">{d.hero.titleAccent}</em><span class="type__caret"></span>
+    </span>
+  </h1>
+  <p class="title-page__tagline ink" style="--d: 1">{d.hero.tagline}</p>
+  <ul class="checklist">
+    {
+      d.hero.facts.map((fact, i) => (
+        <li class="ink" style={`--d: ${i + 2}`}>
+          <svg class="draw tick" viewBox="0 0 24 24" aria-hidden="true" style={`--d: ${i + 2}`}>
+            <path pathLength="1" d="M4 13 C 7 15, 8 17, 10 19 C 13 13, 16 9, 21 4" />
+          </svg>
+          {fact}
+        </li>
+      ))
+    }
+  </ul>
+  <div class="title-page__ctas ink" style={`--d: ${d.hero.facts.length + 2}`}>
+    <a class="btn btn--primary" href="#registration" data-goto="registration">{d.hero.ctaPrimary}</a>
+    <a class="btn btn--ghost" href="#pathway" data-goto="pathway">{d.hero.ctaSecondary}</a>
+  </div>
+  <p class="note title-page__note ink" style={`--d: ${d.hero.facts.length + 3}`}>
+    <Icon name="arrowUp" size={18} /> {d.sketch.startHere}
+  </p>
+</Page>

@@ -1,0 +1,28 @@
+---
+import Page from '../Page.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const r = d.registration;
+---
+
+<Page {...meta} variant="grid" class="benefit-page">
+  <p class="kicker-sm ink" style="--d: 0">{r.benefitKicker}</p>
+  <div class="stamp rise" style="--d: 1">
+    <span class="stamp__amount">{r.benefitAmount}</span>
+    <span class="stamp__label">IELTS</span>
+  </div>
+  <p class="note note--lg benefit-page__save ink" style="--d: 2">{d.sketch.save}</p>
+  <p class="body body--sm rise" style="--d: 3">{r.benefitText}</p>
+  <aside class="sticky rise" style="--d: 4">
+    <span class="tape" aria-hidden="true"></span>
+    <p class="sticky__title">{r.planTitle}</p>
+    {r.planText.map((p, n) => <p class:list={['sticky__p', n === 0 && 'sticky__p--lead']}>{p}</p>)}
+    <p class="note sticky__note">{d.sketch.dontWait}</p>
+  </aside>
+</Page>

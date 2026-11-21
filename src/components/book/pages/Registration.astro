@@ -1,0 +1,36 @@
+---
+import Page from '../Page.astro';
+import Icon from '../../Icon.astro';
+import { site } from '../../../config/site';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const r = t(lang).registration;
+---
+
+<Page {...meta} variant="paper">
+  <p class="kicker-sm ink" style="--d: 0">{r.kicker}</p>
+  <h2 class="h-title ink" style="--d: 1">{r.title}</h2>
+  <p class="body body--sm rise" style="--d: 2">{r.intro}</p>
+  <ul class="bullets">
+    {r.topics.map((topic, n) => <li class="rise" style={`--d: ${Math.min(n + 3, 8)}`}>{topic}</li>)}
+  </ul>
+  <div class="contact-card rise" style="--d: 9">
+    <span class="contact-card__icon" aria-hidden="true"><Icon name="mail" size={22} /></span>
+    <div>
+      <p class="kicker-sm">{r.coordinatorLabel}</p>
+      <p class="contact-card__text">{r.coordinatorText}</p>
+      {
+        site.email && (
+          <a class="btn btn--primary contact-card__cta" href={`mailto:${site.email}`}>
+            {r.contactCta}
+          </a>
+        )
+      }
+    </div>
+  </div>
+</Page>

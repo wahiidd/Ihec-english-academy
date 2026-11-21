@@ -1,0 +1,26 @@
+---
+import Page from '../Page.astro';
+import { t, homePath, otherLang, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const other = otherLang(lang);
+---
+
+<Page {...meta} variant="back-cover">
+  <div class="cover cover--back">
+    <p class="note note--lg cover__thanks">{d.sketch.thanks}</p>
+    <img class="cover__emblem" src="/images/emblem-white.png" alt="" width="240" height="192" />
+    <p class="cover__title">{d.hero.coverTitle}</p>
+    <span class="cover__rule" aria-hidden="true"></span>
+    <p class="cover__sub">{d.hero.tagline}</p>
+    <div class="cover__actions">
+      <button class="btn btn--light" type="button" data-goto="cover">← {d.sketch.backToCover}</button>
+      <a class="cover__lang" href={homePath(other)} hreflang={other} lang={other}>{d.nav.switchLabel}</a>
+    </div>
+  </div>
+</Page>

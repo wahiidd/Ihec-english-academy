@@ -1,0 +1,41 @@
+---
+import { Image } from 'astro:assets';
+import Page from '../Page.astro';
+import group from '../../../assets/partnership/DSC_5911.jpg';
+import signing from '../../../assets/partnership/DSC_5896.jpg';
+import handover from '../../../assets/partnership/DSC_5897.jpg';
+import presentation from '../../../assets/partnership/DSC_5884.jpg';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const g = t(lang).gallery;
+const small = [
+  { src: signing, alt: g.alts.signing, r: '-3deg' },
+  { src: handover, alt: g.alts.handover, r: '2deg' },
+  { src: presentation, alt: g.alts.presentation, r: '-1.5deg' },
+];
+---
+
+<Page {...meta} variant="paper" class="photos">
+  <h2 class="h-title h-title--sm ink" style="--d: 0">{g.title}</h2>
+  <figure class="polaroid polaroid--wide rise" style="--d: 1; --r: -1.2deg">
+    <span class="tape" aria-hidden="true"></span>
+    <Image src={group} alt={g.alts.group} widths={[480, 900]} sizes="(min-width: 960px) 460px, 90vw" class="polaroid__img" />
+  </figure>
+  <div class="photos__row">
+    {
+      small.map((p, i) => (
+        <figure class="polaroid rise" style={`--d: ${i + 2}; --r: ${p.r}`}>
+          <span class="tape tape--sm" aria-hidden="true"></span>
+          <Image src={p.src} alt={p.alt} widths={[240, 480]} sizes="(min-width: 960px) 150px, 30vw" class="polaroid__img" />
+        </figure>
+      ))
+    }
+  </div>
+  <p class="photos__text rise" style="--d: 5">{g.text}</p>
+  <p class="credit">{g.credit}</p>
+</Page>

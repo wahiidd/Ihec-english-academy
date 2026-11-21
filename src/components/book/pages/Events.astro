@@ -1,0 +1,80 @@
+---
+/* Only included in the book when events are scheduled. */
+import Page from '../Page.astro';
+import Icon from '../../Icon.astro';
+import { closesAt, eventTime, upcomingEvents } from '../../../data/events';
+import { t, formatDate, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const e = t(lang).events;
+const list = upcomingEvents().slice(0, 3);
+---
+
+<Page {...meta} variant="paper" class="events-page">
+  <p class="kicker-sm ink" style="--d: 0">{e.kicker}</p>
+  <h2 class="h-title ink" style="--d: 1">{e.title}</h2>
+  <ul class="ev-list" data-ev-list data-lang={lang}>
+    {
+      list.map((ev, n) => (
+        <li class="ev rise" style={`--d: ${n + 2}`} data-slug={ev.slug}>
+          <div class="ev__date" aria-hidden="true">
+            <span class="ev__day">{formatDate(ev.date, lang, { month: undefined, year: undefined })}</span>
+            <span class="ev__month">{formatDate(ev.date, lang, { day: undefined, month: 'short', year: undefined })}</span>
+          </div>
+          <div class="ev__body">
+            <h3>{ev.title[lang]}</h3>
+            <p class="ev__meta">
+              {formatDate(ev.date, lang, { weekday: 'long' })}
+              {ev.showTime !== false && <> · {eventTime(ev, lang)}</>}
+              {ev.place && <> · {ev.place[lang]}</>}
+            </p>
+            {ev.note && <p class="ev__note">{ev.note[lang]}</p>}
+            {ev.registration && (
+              <>
+                <p class="ev__access">
+                  <Icon name="form" size={16} /> → <Icon name="mail" size={16} /> → <Icon name="qr" size={16} /> {e.access}
+                </p>
+                <div class="ev__reg">
+                  <span class="ev__seats" data-seats>{e.loading}</span>
+                  <button class="btn btn--primary" type="button" data-open-registration={ev.slug} data-title={ev.title[lang]} data-closes={closesAt(ev)} disabled>
+                    {e.register}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+</Page>
+
+<script>
+  const list = document.querySelector<HTMLElement>('[data-ev-list]');
+  if (list) {
+    const fr = list.dataset.lang === 'fr';
+    const L = fr
+      ? { left: (n: number) => (n === 1 ? '1 place restante' : `${n} places restantes`), full: 'Complet', closed: 'Inscriptions closes' }
+      : { left: (n: number) => (n === 1 ? '1 seat left' : `${n} seats left`), full: 'Full', closed: 'Registration closed' };
+    const refresh = async () => {
+      try {
+        const data: { slug: string; remaining: number; open: boolean }[] = await (await fetch('/api/availability', { cache: 'no-store' })).json();
+        list.querySelectorAll<HTMLElement>('[data-slug]').forEach((li) => {
+          const a = data.find((x) => x.slug === li.dataset.slug);
+          const btn = li.querySelector<HTMLButtonElement>('[data-open-registration]');
+          const seats = li.querySelector<HTMLElement>('[data-seats]');
+          if (!a || !btn || !seats) return;
+          seats.textContent = a.remaining > 0 ? L.left(a.remaining) : L.full;
+          btn.disabled = !a.open;
+          if (!a.open) btn.textContent = a.remaining === 0 ? L.full : L.closed;
+        });
+      } catch {}
+    };
+    refresh();
+    document.addEventListener('registration:changed', refresh);
+  }
+</script>

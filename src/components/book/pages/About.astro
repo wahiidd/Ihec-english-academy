@@ -1,0 +1,33 @@
+---
+import Page from '../Page.astro';
+import { t, launchDateLabel, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const a = t(lang).about;
+const facts = [
+  [a.facts.launch, launchDateLabel(lang)],
+  [a.facts.supervision, a.facts.supervisionValue],
+  [a.facts.focus, a.facts.focusValue],
+  [a.facts.membership, a.facts.membershipValue],
+];
+---
+
+<Page {...meta} variant="paper">
+  <p class="kicker-sm ink" style="--d: 0">{a.kicker}</p>
+  <h2 class="h-title ink" style="--d: 1">{a.title}</h2>
+  {a.paragraphs.map((p, i) => <p class="body rise" style={`--d: ${i + 2}`}>{p}</p>)}
+  <dl class="ledger rise" style="--d: 4">
+    {
+      facts.map(([label, value]) => (
+        <div>
+          <dt>{label}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+</Page>

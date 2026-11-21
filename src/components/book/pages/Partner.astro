@@ -1,0 +1,30 @@
+---
+import { Image } from 'astro:assets';
+import Page from '../Page.astro';
+import ieltsLogo from '../../../assets/british-council-ielts.png';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+---
+
+<Page {...meta} variant="paper">
+  <p class="kicker-sm ink" style="--d: 0">{d.partner.kicker}</p>
+  <h2 class="h-title ink" style="--d: 1">{d.partner.title}</h2>
+  <p class="body rise" style="--d: 2">{d.partner.text}</p>
+  <div class="logos rise" style="--d: 3">
+    <picture>
+      <source srcset="/images/logo-full.webp" type="image/webp" />
+      <img class="logos__ihec" src="/images/logo-full.png" alt="IHEC Carthage English Academy" width="900" height="470" />
+    </picture>
+    <svg class="draw logos__x" viewBox="0 0 40 40" aria-hidden="true" style="--d: 4">
+      <path pathLength="1" d="M8 8 L32 32 M32 8 L8 32" />
+    </svg>
+    <Image src={ieltsLogo} alt="British Council IELTS" width={220} densities={[1, 2]} class="logos__bc" />
+  </div>
+  <p class="note ink" style="--d: 5">{d.sketch.signed} — {d.sketch.photosNote}</p>
+</Page>

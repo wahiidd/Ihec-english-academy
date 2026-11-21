@@ -1,0 +1,38 @@
+---
+import Page from '../Page.astro';
+import Icon from '../../Icon.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const a = t(lang).activities;
+const items = [
+  { key: 'courses', icon: 'courses', hybrid: false },
+  { key: 'workshops', icon: 'workshops', hybrid: true },
+  { key: 'debates', icon: 'debates', hybrid: false },
+  { key: 'training', icon: 'training', hybrid: false },
+] as const;
+---
+
+<Page {...meta} variant="paper">
+  <p class="kicker-sm ink" style="--d: 0">{a.kicker}</p>
+  <h2 class="h-title ink" style="--d: 1">{a.title}</h2>
+  <p class="body body--sm rise" style="--d: 2">{a.intro}</p>
+  <ul class="formats">
+    {
+      items.map(({ key, icon, hybrid }, n) => (
+        <li class="rise" style={`--d: ${n + 3}`}>
+          <span class="formats__icon" aria-hidden="true"><Icon name={icon} size={22} /></span>
+          <h3>
+            {a.items[key].title}
+            {hybrid && <span class="badge">{a.hybrid}</span>}
+          </h3>
+          <p>{a.items[key].text}</p>
+        </li>
+      ))
+    }
+  </ul>
+</Page>

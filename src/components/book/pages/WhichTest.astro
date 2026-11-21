@@ -1,0 +1,36 @@
+---
+import Page from '../Page.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const i = d.ielts;
+const goals = [d.sketch.goalStudy, d.sketch.goalWork];
+---
+
+<Page {...meta} variant="grid">
+  <h2 class="h-title ink" style="--d: 0">{i.whichTitle}</h2>
+  <div class="tree">
+    <p class="tree__root note note--lg rise" style="--d: 1">{d.sketch.yourGoal}</p>
+    <svg class="draw tree__branches" viewBox="0 0 400 70" preserveAspectRatio="none" aria-hidden="true" style="--d: 2">
+      <path pathLength="1" vector-effect="non-scaling-stroke" d="M200 2 C 200 30, 100 30, 100 62 M92 54 L100 66 L108 54" />
+      <path pathLength="1" vector-effect="non-scaling-stroke" d="M200 2 C 200 30, 300 30, 300 62 M292 54 L300 66 L308 54" />
+    </svg>
+    <div class="tree__leaves">
+      {
+        i.tests.map((test, n) => (
+          <article class={`test-card test-card--${n} rise`} style={`--d: ${n + 3}`}>
+            <p class="note test-card__goal">{goals[n]}</p>
+            <h3 lang="en">{test.title}</h3>
+            <p>{test.text}</p>
+          </article>
+        ))
+      }
+    </div>
+  </div>
+  <p class="callout rise" style="--d: 5">{i.whichNote}</p>
+</Page>

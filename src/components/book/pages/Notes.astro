@@ -1,0 +1,17 @@
+---
+/* Blank "notes" page, used to keep an even page count when needed. */
+import Page from '../Page.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+---
+
+<Page {...meta} variant="ruled" class="notes-page">
+  <p class="note note--lg">{d.sketch.notes}</p>
+  <img class="notes-page__emblem" src="/images/emblem.png" alt="" width="240" height="192" />
+</Page>

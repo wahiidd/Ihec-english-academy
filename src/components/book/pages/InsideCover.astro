@@ -1,0 +1,29 @@
+---
+import Page from '../Page.astro';
+import { site } from '../../../config/site';
+import { t, launchDateLabel, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const launched = Date.now() >= Date.parse(site.launchDate);
+---
+
+<Page {...meta} variant="paper" class="inside">
+  <div class="inside__wrap">
+    <picture class="rise" style="--d: 0">
+      <source srcset="/images/logo-full.webp" type="image/webp" />
+      <img class="inside__logo" src="/images/logo-full.png" alt={d.hero.logoAlt} width="900" height="470" />
+    </picture>
+    <svg class="draw inside__flourish" viewBox="0 0 240 20" aria-hidden="true" style="--d: 1">
+      <path pathLength="1" d="M4 12 C 40 2, 70 20, 110 10 S 180 2, 236 12" />
+    </svg>
+    <p class="inside__lead rise" style="--d: 2">{d.hero.lead}</p>
+    <p class="inside__since rise" style="--d: 3">
+      {launched ? d.hero.launchAfter : d.hero.launchBefore} <strong>{launchDateLabel(lang)}</strong> · {d.footer.supervision}
+    </p>
+  </div>
+</Page>

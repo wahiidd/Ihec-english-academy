@@ -1,0 +1,32 @@
+---
+/* One page of the book. Even indexes are right-hand pages (front of a leaf),
+   odd indexes are left-hand pages (back of the previous leaf). */
+interface Props {
+  index: number;
+  id?: string;
+  /** Running head printed at the top of the page. */
+  head?: string;
+  variant?: 'paper' | 'ruled' | 'grid' | 'cover' | 'back-cover';
+  class?: string;
+}
+
+const { index, id, head, variant = 'paper', class: className } = Astro.props;
+const side = index % 2 === 0 ? 'right' : 'left';
+const showNumber = variant !== 'cover' && variant !== 'back-cover';
+---
+
+<section
+  class:list={['face', `face--${side === 'right' ? 'front' : 'back'}`, `page--${side}`, `page--${variant}`, className]}
+  id={id}
+  data-page={index}
+  aria-label={head}
+>
+  <div class="face__inner">
+    {head && showNumber && <p class="face__head" aria-hidden="true">{head}</p>}
+    <div class="face__body">
+      <slot />
+    </div>
+    {showNumber && <span class="face__num" aria-hidden="true">{index}</span>}
+  </div>
+  <span class="face__corner" data-corner={side === 'right' ? 'next' : 'prev'} aria-hidden="true"></span>
+</section>

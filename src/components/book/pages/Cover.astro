@@ -1,0 +1,23 @@
+---
+import Page from '../Page.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+---
+
+<Page {...meta} variant="cover">
+  <div class="cover">
+    <p class="cover__top">IHEC Carthage</p>
+    <img class="cover__emblem" src="/images/emblem-white.png" alt="" width="240" height="192" />
+    <p class="cover__title">{d.hero.coverTitle}</p>
+    <span class="cover__rule" aria-hidden="true"></span>
+    <p class="cover__sub">{d.hero.coverSub}</p>
+    <p class="cover__edition">{d.hero.eyebrow}</p>
+    <button class="note cover__turn" type="button" data-nav="next">{d.sketch.turn} <span aria-hidden="true">→</span></button>
+  </div>
+</Page>

@@ -1,0 +1,31 @@
+---
+import Page from '../Page.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const p = d.pathway;
+---
+
+<Page {...meta} variant="ruled">
+  <h2 class="h-title ink" style="--d: 0">{p.prepTitle}</h2>
+  <p class="body rise" style="--d: 1">{p.prepIntro}</p>
+  <ul class="boxes">
+    {
+      p.prep.map((item, n) => (
+        <li class="rise" style={`--d: ${n + 2}`}>
+          <svg class="draw boxes__box" viewBox="0 0 28 28" aria-hidden="true" style={`--d: ${n + 2}`}>
+            <path pathLength="1" d="M4 5 C 10 3, 18 4, 24 4 C 25 11, 24 18, 24 24 C 17 25, 10 24, 4 24 C 3 17, 4 10, 4 5 M8 14 C 10 16, 11 18, 12 20 C 15 14, 18 10, 23 6" />
+          </svg>
+          <span>{item}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <p class="callout rise" style="--d: 8">{p.prepNote}</p>
+  <p class="note ink" style="--d: 9">{d.sketch.prepNote}</p>
+</Page>

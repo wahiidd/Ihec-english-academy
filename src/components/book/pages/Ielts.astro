@@ -1,0 +1,35 @@
+---
+import Page from '../Page.astro';
+import { t, type Lang } from '../../../i18n/utils';
+
+interface Props {
+  lang: Lang;
+  meta: { index: number; id?: string; head?: string };
+}
+const { lang, meta } = Astro.props;
+const d = t(lang);
+const i = d.ielts;
+---
+
+<Page {...meta} variant="paper">
+  <p class="kicker-sm ink" style="--d: 0">{i.kicker}</p>
+  <h2 class="h-title ink" style="--d: 1">{i.title}</h2>
+  <p class="body body--sm rise" style="--d: 2">{i.lead}</p>
+  <div class="skills-map">
+    {
+      i.skills.map((s, n) => (
+        <div class={`skills-map__cell skills-map__cell--${n} rise`} style={`--d: ${n + 3}`}>
+          <h3 lang="en">{s.title}</h3>
+          <p>{s.text}</p>
+        </div>
+      ))
+    }
+    <div class="skills-map__hub">
+      <svg class="draw" viewBox="0 0 100 100" aria-hidden="true" style="--d: 3">
+        <path pathLength="1" d="M52 6 C 78 6, 95 25, 94 50 C 93 76, 74 94, 49 94 C 24 93, 6 75, 7 49 C 8 24, 27 7, 55 8" />
+      </svg>
+      <span>IELTS</span>
+    </div>
+  </div>
+  <p class="note ink" style="--d: 8">{d.sketch.fourSkills}</p>
+</Page>
