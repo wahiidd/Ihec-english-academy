@@ -34,13 +34,39 @@ export const en = {
     countdownLabel: 'Starts in',
     units: { d: 'd', h: 'h', m: 'min' },
     logoAlt: 'IHEC Carthage English Academy — Communicate, Lead, Succeed',
+    facts: [
+      'IELTS preparation at IHEC',
+      'Official test with the British Council',
+      '70 TND discount on IELTS registration',
+      'Free membership for IHEC students',
+    ],
+    coverTitle: 'IHEC English Academy',
+    coverSub: 'Communicate • Lead • Succeed',
+    open: 'Open the book',
+  },
+  book: {
+    contents: 'Contents',
+    reading: 'Chapter',
+    start: 'Welcome',
+    chapters: {
+      about: 'About',
+      partner: 'Partnership',
+      ielts: 'IELTS',
+      pathway: 'Pathway',
+      registration: 'IELTS registration',
+      activities: 'Activities',
+      team: 'Team',
+      events: 'Events',
+      faq: 'FAQ',
+      contact: 'Contact',
+    },
   },
   about: {
     kicker: 'About us',
     title: 'An academy built for IHEC students',
     paragraphs: [
       'IHEC English Academy gives IHEC Carthage students a place to practise, improve and certify their English, with a clear focus on IELTS preparation and international certification, in partnership with the British Council.',
-      'Placed under the supervision of IHEC Carthage, the academy is led by Mrs. Dorra Bechaouch, Project Lead and IELTS Registration Coordinator, together with a team of project coordinators.',
+      'Placed under the supervision of IHEC Carthage, the academy is run by its Project Lead and a team of project coordinators — meet them in the Team section below.',
     ],
     facts: {
       launch: 'Launch',
@@ -137,9 +163,9 @@ export const en = {
     benefitAmount: '−70 TND',
     benefitText:
       'Students registering through the IHEC-coordinated registration process may benefit from an agreed 70 TND discount on IELTS registration, subject to the applicable conditions and confirmation.',
-    coordinatorLabel: 'IELTS Registration Coordinator',
-    coordinatorName: 'Mrs. Dorra Bechaouch',
-    coordinatorRoles: ['Project Lead – IHEC English Academy', 'IELTS Registration Coordinator – IHEC Carthage'],
+    coordinatorLabel: 'IELTS Registration Coordination',
+    coordinatorName: 'IHEC English Academy',
+    coordinatorText: "Questions about IELTS sessions, deadlines, documents, payment or the 70 TND discount? Write to us.",
     contactCta: 'Contact the Academy',
     planTitle: 'Planning your exam?',
     planText: [

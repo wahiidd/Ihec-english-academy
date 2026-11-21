@@ -1,0 +1,291 @@
+---
+/* Floating mini book: its lines fill in as you read down the page, it shows the current chapter,
+   and a click opens the table of contents. */
+import { upcomingEvents } from '../data/events';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).book;
+const ids = ['about', 'partner', 'ielts', 'pathway', 'registration', 'activities', 'team', ...(upcomingEvents().length ? ['events'] : []), 'faq', 'contact'] as const;
+const chapters = ids.map((id) => ({ id, label: dict.chapters[id as keyof typeof dict.chapters] }));
+const lines = 6; // per page
+---
+
+<div class="mb" data-mb data-start={dict.start}>
+  <nav class="mb__toc" id="mb-toc" aria-label={dict.contents} data-mb-toc hidden>
+    <p class="mb__toc-title">{dict.contents}</p>
+    <ol>
+      {
+        chapters.map((c, i) => (
+          <li>
+            <a href={`#${c.id}`} data-mb-link={c.id}>
+              <span class="mb__toc-n">{String(i + 1).padStart(2, '0')}</span>
+              {c.label}
+            </a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
+
+  <button class="mb__btn" type="button" aria-expanded="false" aria-controls="mb-toc" data-mb-btn>
+    <svg class="mb__book" viewBox="0 0 64 44" width="46" height="32" aria-hidden="true">
+      <path class="mb__cover" d="M32 6 C24 2 12 2 4 4 V40 C12 38 24 38 32 42 C40 38 52 38 60 40 V4 C52 2 40 2 32 6 Z" />
+      <path class="mb__paper" d="M32 8 C25 4.5 14 4.5 7 6 V37 C14 35.5 25 35.5 32 39 Z" />
+      <path class="mb__paper" d="M32 8 C39 4.5 50 4.5 57 6 V37 C50 35.5 39 35.5 32 39 Z" />
+      {
+        Array.from({ length: lines * 2 }, (_, i) => {
+          const right = i >= lines;
+          const row = i % lines;
+          const y = 11 + row * 4.3;
+          const x = right ? 36 : 10;
+          return <rect class="mb__line" x={x} y={y} width="18" height="1.6" rx="0.8" data-line={i} />;
+        })
+      }
+    </svg>
+    <span class="mb__text">
+      <span class="mb__label">{dict.reading}</span>
+      <span class="mb__chapter" data-mb-chapter>{dict.start}</span>
+    </span>
+  </button>
+</div>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-mb]');
+  if (root) {
+    const btn = root.querySelector<HTMLButtonElement>('[data-mb-btn]')!;
+    const toc = root.querySelector<HTMLElement>('[data-mb-toc]')!;
+    const chapterEl = root.querySelector<HTMLElement>('[data-mb-chapter]')!;
+    const lines = [...root.querySelectorAll<SVGRectElement>('[data-line]')];
+    const links = [...root.querySelectorAll<HTMLAnchorElement>('[data-mb-link]')];
+    const sections = links
+      .map((a) => ({ link: a, el: document.getElementById(a.dataset.mbLink!) }))
+      .filter((s): s is { link: HTMLAnchorElement; el: HTMLElement } => !!s.el);
+    const hero = document.querySelector('main > section');
+
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const doc = document.documentElement;
+      const progress = Math.min(1, Math.max(0, scrollY / (doc.scrollHeight - innerHeight)));
+      // Lines "get written" one after the other: left page first, then right page.
+      const filled = progress * lines.length;
+      lines.forEach((line, i) => line.style.setProperty('--fill', String(Math.min(1, Math.max(0, filled - i)))));
+
+      // Show the mini book once the opening book is behind us.
+      const pastHero = hero ? hero.getBoundingClientRect().bottom < innerHeight * 0.35 : true;
+      root.classList.toggle('is-visible', pastHero);
+
+      // Current chapter = last section whose top passed the upper third of the screen.
+      let current = sections[0];
+      for (const s of sections) if (s.el.getBoundingClientRect().top < innerHeight * 0.35) current = s;
+      const label = pastHero && current ? current.link.textContent!.replace(/^\s*\d+\s*/, '').trim() : root.dataset.start!;
+      if (chapterEl.textContent !== label) {
+        chapterEl.textContent = label;
+        chapterEl.classList.remove('is-new');
+        void chapterEl.offsetWidth;
+        chapterEl.classList.add('is-new');
+      }
+      links.forEach((a) => a.classList.toggle('is-current', pastHero && a === current?.link));
+    };
+    const onScroll = () => {
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(update);
+      }
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    update();
+
+    const setOpen = (open: boolean) => {
+      toc.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      root.classList.toggle('is-open', open);
+    };
+    btn.addEventListener('click', () => setOpen(toc.hidden));
+    toc.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !toc.hidden) {
+        setOpen(false);
+        btn.focus();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!toc.hidden && !root.contains(e.target as Node)) setOpen(false);
+    });
+  }
+</script>
+
+<style>
+  .mb {
+    position: fixed;
+    right: max(16px, env(safe-area-inset-right));
+    bottom: max(16px, env(safe-area-inset-bottom));
+    z-index: 60;
+    display: grid;
+    justify-items: end;
+    gap: 0.6rem;
+    opacity: 0;
+    transform: translateY(16px);
+    pointer-events: none;
+    transition:
+      opacity 0.35s ease,
+      transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mb.is-visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .mb__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 52px;
+    padding: 0.45rem 1rem 0.45rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgb(15 42 92 / 0.18);
+    color: var(--navy);
+    font: inherit;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .mb__btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgb(15 42 92 / 0.24);
+  }
+  .mb__cover {
+    fill: var(--navy);
+  }
+  .mb__paper {
+    fill: #fffdf7;
+  }
+  .mb__line {
+    fill: var(--teal);
+    transform-box: fill-box;
+    transform-origin: left center;
+    transform: scaleX(var(--fill, 0));
+    transition: transform 0.25s ease-out;
+  }
+  .mb__text {
+    display: grid;
+    text-align: left;
+    line-height: 1.15;
+  }
+  .mb__label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal-ink);
+  }
+  .mb__chapter {
+    max-width: 11rem;
+    overflow: hidden;
+    font-family: var(--font-serif);
+    font-size: 0.98rem;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  /* The chapter name is "written" from left to right when it changes. */
+  .mb__chapter.is-new {
+    animation: write 0.6s ease-out;
+  }
+  @keyframes write {
+    from {
+      clip-path: inset(0 100% 0 0);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+    }
+  }
+
+  .mb__toc {
+    width: min(78vw, 260px);
+    padding: 0.9rem 0.6rem 0.6rem;
+    border-radius: 16px;
+    background: #fffdf7;
+    border: 1px solid #efe7d6;
+    box-shadow: 0 18px 40px rgb(15 42 92 / 0.22);
+    transform-origin: bottom right;
+    animation: toc-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .mb__toc[hidden] {
+    display: none;
+  }
+  @keyframes toc-in {
+    from {
+      opacity: 0;
+      transform: scale(0.94) translateY(6px);
+    }
+  }
+  .mb__toc-title {
+    padding: 0 0.6rem 0.5rem;
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--navy);
+    border-bottom: 1px dashed #e4dac4;
+  }
+  .mb__toc ol {
+    margin: 0.4rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .mb__toc a {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 40px;
+    padding: 0 0.6rem;
+    border-radius: 8px;
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 0.92rem;
+  }
+  .mb__toc a:hover {
+    background: var(--bg-soft);
+    color: var(--navy);
+  }
+  .mb__toc a.is-current {
+    background: rgb(43 165 155 / 0.12);
+    color: var(--teal-ink);
+    font-weight: 600;
+  }
+  .mb__toc-n {
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    color: #b9ae96;
+    font-variant-numeric: tabular-nums;
+  }
+  @media (max-width: 479px) {
+    .mb__btn {
+      padding-right: 0.8rem;
+    }
+    .mb__chapter {
+      max-width: 8rem;
+      font-size: 0.9rem;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .mb,
+    .mb__line,
+    .mb__chapter.is-new,
+    .mb__toc {
+      transition: none;
+      animation: none;
+    }
+  }
+</style>

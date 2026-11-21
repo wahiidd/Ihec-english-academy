@@ -173,3 +173,24 @@ a:hover { color: var(--navy); }
   border-radius: 8px;
 }
 .skip-link:focus { top: 12px; color: #fff; }
+
+/* Scroll reveal (only when motion is allowed — html.book-anim is set before paint). */
+.book-anim .rv {
+  opacity: 0;
+  transform: translateY(22px);
+  transition:
+    opacity 0.7s ease,
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.book-anim .rv.in {
+  opacity: 1;
+  transform: none;
+}
+.book-anim .section-head.rv h2 {
+  clip-path: inset(0 100% 0 0);
+}
+.book-anim .section-head.rv.in h2 {
+  clip-path: inset(-12% -6% -18% 0);
+  transition: clip-path 1s cubic-bezier(0.65, 0, 0.35, 1) 0.15s;
+}

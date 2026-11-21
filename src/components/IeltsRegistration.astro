@@ -1,8 +1,6 @@
 ---
 import Icon from './Icon.astro';
-import Portrait from './Portrait.astro';
 import { site } from '../config/site';
-import { projectLead } from '../data/team';
 import { t, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -11,7 +9,6 @@ interface Props {
 
 const { lang } = Astro.props;
 const dict = t(lang).registration;
-const photoAlt = t(lang).team.photoOf.replace('{name}', projectLead.name);
 ---
 
 <section class="section" id="registration">
@@ -38,16 +35,19 @@ const photoAlt = t(lang).team.photoOf.replace('{name}', projectLead.name);
 
     <div class="bottom">
       <article class="coordinator">
-        <Portrait slug={projectLead.slug} name={projectLead.name} alt={photoAlt} width={96} class="coordinator__photo" />
+        <span class="coordinator__icon" aria-hidden="true"><Icon name="mail" size={26} /></span>
         <div>
           <p class="coordinator__label">{dict.coordinatorLabel}</p>
           <h3>{dict.coordinatorName}</h3>
-          {dict.coordinatorRoles.map((role) => <p class="coordinator__role">{role}</p>)}
+          <p class="coordinator__role">{dict.coordinatorText}</p>
           {
             site.email && (
-              <a class="btn btn--primary coordinator__cta" href={`mailto:${site.email}`}>
-                <Icon name="mail" size={18} /> {dict.contactCta}
-              </a>
+              <>
+                <a class="coordinator__mail" href={`mailto:${site.email}`}>{site.email}</a>
+                <a class="btn btn--primary coordinator__cta" href={`mailto:${site.email}`}>
+                  <Icon name="mail" size={18} /> {dict.contactCta}
+                </a>
+              </>
             )
           }
         </div>
@@ -155,9 +155,21 @@ const photoAlt = t(lang).team.photoOf.replace('{name}', projectLead.name);
     border: 1px solid var(--line);
     background: #fff;
   }
-  .coordinator :global(.coordinator__photo) {
-    width: 96px;
+  .coordinator__icon {
+    display: grid;
+    place-items: center;
     flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+  }
+  .coordinator__mail {
+    display: inline-block;
+    margin-top: 0.4rem;
+    font-weight: 600;
+    word-break: break-all;
   }
   .coordinator__label {
     font-size: 0.75rem;

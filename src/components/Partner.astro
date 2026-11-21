@@ -11,7 +11,7 @@ const { lang } = Astro.props;
 const dict = t(lang).partner;
 ---
 
-<section class="partner" aria-labelledby="partner-title">
+<section class="partner" id="partner" aria-labelledby="partner-title">
   <div class="container partner__inner">
     <div class="partner__text">
       <p class="kicker">{dict.kicker}</p>

@@ -36,13 +36,39 @@ export const fr: Dict = {
     countdownLabel: 'Dans',
     units: { d: 'j', h: 'h', m: 'min' },
     logoAlt: 'IHEC Carthage English Academy — Communicate, Lead, Succeed',
+    facts: [
+      'Préparation IELTS à l’IHEC',
+      'Examen officiel avec le British Council',
+      'Réduction de 70 DT sur l’inscription IELTS',
+      'Adhésion gratuite pour les étudiants de l’IHEC',
+    ],
+    coverTitle: 'IHEC English Academy',
+    coverSub: 'Communicate • Lead • Succeed',
+    open: 'Ouvrir le livre',
+  },
+  book: {
+    contents: 'Sommaire',
+    reading: 'Chapitre',
+    start: 'Bienvenue',
+    chapters: {
+      about: 'À propos',
+      partner: 'Partenariat',
+      ielts: 'IELTS',
+      pathway: 'Parcours',
+      registration: 'Inscription IELTS',
+      activities: 'Activités',
+      team: 'Équipe',
+      events: 'Événements',
+      faq: 'FAQ',
+      contact: 'Contact',
+    },
   },
   about: {
     kicker: 'À propos',
     title: 'Une académie pensée pour les étudiants de l’IHEC',
     paragraphs: [
       'L’IHEC English Academy offre aux étudiants de l’IHEC Carthage un lieu pour pratiquer, perfectionner et certifier leur anglais, avec une priorité claire : la préparation à l’IELTS et la certification internationale, en partenariat avec le British Council.',
-      'Placée sous l’encadrement de l’IHEC Carthage, l’académie est dirigée par Mme Dorra Bechaouch, Project Lead et IELTS Registration Coordinator, avec une équipe de coordination de projet.',
+      'Placée sous l’encadrement de l’IHEC Carthage, l’académie est animée par sa Project Lead et une équipe de coordination de projet — découvrez-les dans la section Équipe ci-dessous.',
     ],
     facts: {
       launch: 'Lancement',
@@ -139,9 +165,9 @@ export const fr: Dict = {
     benefitAmount: '−70 DT',
     benefitText:
       'Les étudiants inscrits dans le cadre de la procédure coordonnée par l’IHEC peuvent bénéficier d’une réduction de 70 DT sur l’inscription IELTS, sous réserve des conditions applicables et de confirmation.',
-    coordinatorLabel: 'Responsable des inscriptions IELTS',
-    coordinatorName: 'Mme Dorra Bechaouch',
-    coordinatorRoles: ['Project Lead – IHEC English Academy', 'IELTS Registration Coordinator – IHEC Carthage'],
+    coordinatorLabel: 'Coordination des inscriptions IELTS',
+    coordinatorName: 'IHEC English Academy',
+    coordinatorText: "Une question sur les sessions IELTS, les délais, les documents, le paiement ou la réduction de 70 DT ? Écrivez-nous.",
     contactCta: 'Contacter l’Academy',
     planTitle: 'Vous envisagez de passer l’IELTS ?',
     planText: [

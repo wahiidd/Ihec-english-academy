@@ -1,7 +1,9 @@
 ---
+/* Opening book: the cover swings open (its inside becomes the left page, with the logo and intro),
+   then the right page "writes" the title letter by letter and the key facts line by line.
+   Without JavaScript or with reduced motion, the book is simply shown open. */
 import Icon from './Icon.astro';
-import { site } from '../config/site';
-import { t, launchDateLabel, type Lang } from '../i18n/utils';
+import { t, type Lang } from '../i18n/utils';
 
 interface Props {
   lang: Lang;
@@ -9,203 +11,393 @@ interface Props {
 
 const { lang } = Astro.props;
 const dict = t(lang).hero;
-const launchDate = launchDateLabel(lang);
-// Initial state at build time; the script below re-evaluates it in the browser.
-const launched = Date.now() >= Date.parse(site.launchDate);
+const title = `${dict.titleStart} ${dict.titleAccent}`;
 ---
 
-<section class="hero">
-  <div class="hero__bg" aria-hidden="true"></div>
-  <div class="container hero__inner">
-    <div class="hero__text">
-      <div
-        class="launch"
-        data-launch={site.launchDate}
-        data-unit-d={dict.units.d}
-        data-unit-h={dict.units.h}
-        data-unit-m={dict.units.m}
-      >
-        <Icon name="calendar" size={18} />
-        <span data-launch-before hidden={launched}>
-          {dict.launchBefore} <strong>{launchDate}</strong>{' '}
-          <span class="launch__count" data-countdown-wrap hidden>
-            · {dict.countdownLabel} <span data-countdown></span>
+<script is:inline>
+  // Runs before paint: start closed only when we can animate.
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('book-anim');
+</script>
+
+<section class="bh" aria-labelledby="bh-title">
+  <div class="bh__bg" aria-hidden="true"></div>
+  <div class="container">
+    <div class="book" data-book>
+      <!-- Right page: what gets written -->
+      <div class="page page--right">
+        <div class="page__mobile-head">
+          <picture>
+            <source srcset="/images/logo-full.webp" type="image/webp" />
+            <img src="/images/logo-full.png" alt={dict.logoAlt} width="900" height="470" fetchpriority="high" />
+          </picture>
+        </div>
+        <p class="eyebrow">{dict.eyebrow}</p>
+        <h1 id="bh-title">
+          <span class="visually-hidden">{title}</span>
+          <span class="type" aria-hidden="true" data-type={dict.titleStart} data-accent={dict.titleAccent}>
+            <span class="type__text">{dict.titleStart} </span><em class="type__accent">{dict.titleAccent}</em><span class="type__caret"></span>
           </span>
-        </span>
-        <span data-launch-after hidden={!launched}>
-          {dict.launchAfter} <strong>{launchDate}</strong>
-        </span>
+        </h1>
+        <p class="tagline ink" style="--d: 0">{dict.tagline}</p>
+        <ul class="facts">
+          {
+            dict.facts.map((fact, i) => (
+              <li class="ink" style={`--d: ${i + 1}`}>
+                <span class="facts__check" aria-hidden="true"><Icon name="check" size={14} /></span>
+                {fact}
+              </li>
+            ))
+          }
+        </ul>
+        <div class="ctas ink" style={`--d: ${dict.facts.length + 1}`}>
+          <a class="btn btn--primary" href="#registration">{dict.ctaPrimary}</a>
+          <a class="btn btn--ghost" href="#pathway">{dict.ctaSecondary}</a>
+        </div>
+        <p class="page__lead--mobile ink" style={`--d: ${dict.facts.length + 2}`}>{dict.lead}</p>
+        <span class="page__num" aria-hidden="true">2</span>
       </div>
 
-      <p class="eyebrow">{dict.eyebrow}</p>
-      <h1>
-        {dict.titleStart} <em>{dict.titleAccent}</em>
-      </h1>
-      <p class="hero__tagline">{dict.tagline}</p>
-      <p class="hero__lead">{dict.lead}</p>
-
-      <div class="hero__ctas">
-        <a class="btn btn--primary" href="#registration">{dict.ctaPrimary}</a>
-        <a class="btn btn--ghost" href="#pathway">{dict.ctaSecondary}</a>
+      <!-- Cover: front = cover art, back = left page once opened -->
+      <div class="cover" aria-hidden="true">
+        <div class="cover__front">
+          <img class="cover__emblem" src="/images/emblem-white.png" alt="" width="240" height="192" />
+          <p class="cover__title">{dict.coverTitle}</p>
+          <span class="cover__rule"></span>
+          <p class="cover__sub">{dict.coverSub}</p>
+        </div>
+        <div class="cover__back page page--left">
+          <picture>
+            <source srcset="/images/logo-full.webp" type="image/webp" />
+            <img src="/images/logo-full.png" alt="" width="900" height="470" />
+          </picture>
+          <p class="page__lead">{dict.lead}</p>
+          <span class="page__num">1</span>
+        </div>
       </div>
-    </div>
-
-    <div class="hero__visual">
-      <picture>
-        <source srcset="/images/logo-full.webp" type="image/webp" />
-        <img src="/images/logo-full.png" alt={dict.logoAlt} width="900" height="470" fetchpriority="high" />
-      </picture>
+      <span class="spine" aria-hidden="true"></span>
     </div>
   </div>
 </section>
 
 <script>
-  const el = document.querySelector<HTMLElement>('[data-launch]');
-  if (el) {
-    const target = Date.parse(el.dataset.launch ?? '');
-    const before = el.querySelector<HTMLElement>('[data-launch-before]')!;
-    const after = el.querySelector<HTMLElement>('[data-launch-after]')!;
-    const wrap = el.querySelector<HTMLElement>('[data-countdown-wrap]')!;
-    const out = el.querySelector<HTMLElement>('[data-countdown]')!;
-    const { unitD, unitH, unitM } = el.dataset;
+  const book = document.querySelector<HTMLElement>('[data-book]');
+  const animate = document.documentElement.classList.contains('book-anim');
+  if (book && animate) {
+    const type = book.querySelector<HTMLElement>('.type')!;
+    const textEl = type.querySelector<HTMLElement>('.type__text')!;
+    const accentEl = type.querySelector<HTMLElement>('.type__accent')!;
+    const caret = type.querySelector<HTMLElement>('.type__caret')!;
+    const start = `${type.dataset.type} `;
+    const accent = type.dataset.accent ?? '';
+    textEl.textContent = '';
+    accentEl.textContent = '';
 
-    const tick = () => {
-      const diff = target - Date.now();
-      if (diff <= 0) {
-        before.hidden = true;
-        after.hidden = false;
-        clearInterval(timer);
-        return;
-      }
-      const minutes = Math.floor(diff / 60000);
-      const d = Math.floor(minutes / 1440);
-      const h = Math.floor((minutes % 1440) / 60);
-      const m = minutes % 60;
-      out.textContent = d > 0 ? `${d} ${unitD} ${h} ${unitH}` : `${h} ${unitH} ${m} ${unitM}`;
-      before.hidden = false;
-      after.hidden = true;
-      wrap.hidden = false;
+    const write = () => {
+      const all = start + accent;
+      let i = 0;
+      const step = () => {
+        i += 1;
+        textEl.textContent = all.slice(0, Math.min(i, start.length));
+        accentEl.textContent = i > start.length ? all.slice(start.length, i) : '';
+        if (i < all.length) {
+          setTimeout(step, 26 + Math.random() * 28);
+        } else {
+          book.classList.add('is-written');
+          setTimeout(() => caret.remove(), 2600);
+        }
+      };
+      step();
     };
-    const timer = setInterval(tick, 30_000);
-    tick();
+
+    // Open the cover shortly after load, then write.
+    requestAnimationFrame(() =>
+      setTimeout(() => {
+        book.classList.add('is-open');
+        setTimeout(write, 1250);
+      }, 350),
+    );
   }
 </script>
 
 <style>
-  .hero {
+  .bh {
     position: relative;
     overflow: hidden;
-    padding-block: clamp(3rem, 8vw, 6.5rem) clamp(4rem, 9vw, 7rem);
+    padding-block: clamp(2.5rem, 6vw, 4.5rem) clamp(3.5rem, 8vw, 6rem);
   }
-  .hero__bg {
+  .bh__bg {
     position: absolute;
     inset: 0;
     z-index: -1;
     background:
-      radial-gradient(40rem 28rem at 92% 10%, rgb(58 155 213 / 0.16), transparent 70%),
-      radial-gradient(34rem 26rem at 70% 95%, rgb(43 165 155 / 0.14), transparent 70%),
+      radial-gradient(40rem 28rem at 90% 0%, rgb(58 155 213 / 0.14), transparent 70%),
+      radial-gradient(34rem 26rem at 10% 100%, rgb(43 165 155 / 0.12), transparent 70%),
       linear-gradient(180deg, #fff 0%, var(--bg-soft) 100%);
   }
-  .hero__inner {
-    display: grid;
-    gap: clamp(2.5rem, 6vw, 4rem);
-    align-items: center;
-  }
-  @media (min-width: 960px) {
-    .hero__inner {
-      grid-template-columns: 1.1fr 0.9fr;
-    }
-  }
 
-  .launch {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 1.75rem;
-    padding: 0.5rem 1.1rem 0.5rem 0.85rem;
-    border-radius: 999px;
-    background: #fff;
-    border: 1px solid var(--line);
-    box-shadow: var(--shadow);
-    font-size: 0.88rem;
-    color: var(--ink);
+  /* ---------- Book ---------- */
+  .book {
+    --paper: #fffdf7;
+    --edge: #efe7d6;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 1080px;
+    margin: 0 auto;
+    perspective: 2400px;
+    transition: transform 1.2s cubic-bezier(0.65, 0, 0.35, 1);
   }
-  .launch :global(svg) {
-    color: var(--teal-ink);
-    flex-shrink: 0;
+  .page {
+    position: relative;
+    background-color: var(--paper);
+    box-shadow:
+      0 1px 0 var(--edge),
+      0 30px 60px -20px rgb(15 42 92 / 0.28);
   }
-  .launch strong {
-    color: var(--navy);
+  .page--right {
+    display: grid;
+    align-content: center;
+    gap: 1rem;
+    padding: clamp(1.75rem, 5vw, 3.25rem) clamp(1.5rem, 4.5vw, 3.25rem);
+    border-radius: 18px;
+    /* faint ruled lines, like a notebook page */
+    background-image: repeating-linear-gradient(to bottom, transparent 0 33px, rgb(58 155 213 / 0.07) 33px 34px);
   }
-  @media (max-width: 479px) {
-    .launch {
-      align-items: flex-start;
-      border-radius: 16px;
-    }
-    .launch :global(svg) {
-      margin-top: 2px;
-    }
+  .page__num {
+    position: absolute;
+    bottom: 0.9rem;
+    font-family: var(--font-serif);
+    font-size: 0.8rem;
+    color: #b9ae96;
   }
-  .launch__count {
-    color: var(--teal-ink);
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
+  .page--right .page__num {
+    right: 1.4rem;
   }
-  [hidden] {
-    display: none !important;
+  .page--left .page__num {
+    left: 1.4rem;
   }
 
   .eyebrow {
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 0.24em;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     color: var(--blue-ink);
   }
   h1 {
-    font-size: clamp(2rem, 4.2vw, 3.1rem);
+    font-size: clamp(1.8rem, 3.2vw, 2.55rem);
+    line-height: 1.12;
+    min-height: 3.4em;
   }
-  h1 em {
-    display: block;
+  .type__accent {
     font-style: italic;
-    background: var(--gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    padding-bottom: 0.08em;
+    color: var(--teal-ink);
   }
-  .hero__tagline {
-    margin-top: 1.25rem;
+  .type__caret {
+    display: inline-block;
+    width: 2px;
+    height: 0.95em;
+    margin-left: 3px;
+    vertical-align: -0.1em;
+    background: var(--teal-ink);
+  }
+  :global(html:not(.book-anim)) .type__caret {
+    display: none;
+  }
+  .book.is-written .type__caret {
+    animation: caret 0.9s steps(2) infinite;
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+  .tagline {
     font-weight: 700;
     color: var(--teal-ink);
-    font-size: clamp(1.02rem, 1.6vw, 1.15rem);
   }
-  .hero__tagline + .hero__lead {
-    margin-top: 0.6rem;
+  .facts {
+    display: grid;
+    gap: 0.45rem;
+    margin: 0.25rem 0 0;
+    padding: 0;
+    list-style: none;
   }
-  .hero__lead {
-    max-width: 38rem;
-    margin-top: 1.5rem;
-    font-size: clamp(1.05rem, 1.6vw, 1.2rem);
-    color: var(--muted);
+  .facts li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.98rem;
+    color: var(--ink);
   }
-  .hero__ctas {
+  .facts__check {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgb(43 165 155 / 0.15);
+    color: var(--teal-ink);
+  }
+  .ctas {
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
-    margin-top: 2.25rem;
+    margin-top: 0.75rem;
+  }
+  .page__lead--mobile {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .page__mobile-head img {
+    width: min(70%, 260px);
   }
 
-  .hero__visual {
-    position: relative;
-    padding: clamp(1.5rem, 4vw, 2.75rem);
-    border-radius: var(--radius-lg);
-    background: #fff;
-    box-shadow: var(--shadow);
-    border: 1px solid var(--line);
+  /* Cover */
+  .cover {
+    position: absolute;
+    inset: 0;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    transition:
+      transform 1.3s cubic-bezier(0.65, 0, 0.35, 1),
+      opacity 0.4s ease 1s;
+    pointer-events: none;
   }
-  .hero__visual img {
-    width: 100%;
+  .cover__front,
+  .cover__back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 18px;
+  }
+  .cover__front {
+    display: grid;
+    place-content: center;
+    justify-items: center;
+    gap: 0.8rem;
+    padding: 2rem;
+    background:
+      radial-gradient(30rem 20rem at 80% 10%, rgb(43 165 155 / 0.35), transparent 70%),
+      linear-gradient(135deg, var(--navy-deep), var(--navy));
+    color: #fff;
+    text-align: center;
+    box-shadow:
+      inset 0 0 0 10px rgb(255 255 255 / 0.04),
+      inset 0 0 0 11px rgb(127 211 201 / 0.35),
+      0 30px 60px -20px rgb(15 42 92 / 0.45);
+  }
+  .cover__emblem {
+    width: 110px;
+    height: auto;
+  }
+  .cover__title {
+    font-family: var(--font-serif);
+    font-size: clamp(1.5rem, 3vw, 2.1rem);
+    font-weight: 700;
+  }
+  .cover__rule {
+    width: 60px;
+    height: 2px;
+    background: var(--teal-light);
+  }
+  .cover__sub {
+    font-style: italic;
+    color: var(--teal-light);
+  }
+  .cover__back {
+    display: none;
+    transform: rotateY(180deg);
+  }
+  .page--left {
+    align-content: center;
+    justify-items: center;
+    gap: 1.5rem;
+    padding: clamp(1.75rem, 4vw, 3rem);
+    text-align: center;
+  }
+  .page--left img {
+    width: min(85%, 340px);
+  }
+  .page__lead {
+    max-width: 34ch;
+    color: var(--muted);
+    font-size: 0.98rem;
+  }
+  .spine {
+    display: none;
+  }
+  :global(.book-anim) .book:not(.is-open) .page--right > * {
+    visibility: hidden;
+  }
+
+  /* Desktop: a real two-page spread. */
+  @media (min-width: 860px) {
+    .book {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .page--right {
+      grid-column: 2;
+      border-radius: 0 18px 18px 0;
+      min-height: 520px;
+    }
+    .page__mobile-head,
+    .page__lead--mobile {
+      display: none;
+    }
+    .cover {
+      left: 50%;
+      width: 50%;
+    }
+    .cover__front {
+      border-radius: 0 18px 18px 0;
+    }
+    .cover__back {
+      display: grid;
+      border-radius: 18px 0 0 18px;
+    }
+    .spine {
+      display: block;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: calc(50% - 18px);
+      width: 36px;
+      background: linear-gradient(90deg, transparent, rgb(15 42 92 / 0.12) 45%, rgb(15 42 92 / 0.2) 50%, rgb(15 42 92 / 0.12) 55%, transparent);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.6s ease 0.9s;
+    }
+    /* Closed: the cover sits centred on its own. */
+    :global(.book-anim) .book:not(.is-open) {
+      transform: translateX(-25%);
+    }
+  }
+
+  /* ---------- Open / writing states ---------- */
+  .book.is-open .cover,
+  :global(html:not(.book-anim)) .cover {
+    transform: rotateY(-180deg);
+  }
+  .book.is-open .spine,
+  :global(html:not(.book-anim)) .spine {
+    opacity: 1;
+  }
+  @media (max-width: 859px) {
+    .book.is-open .cover,
+    :global(html:not(.book-anim)) .cover {
+      opacity: 0;
+    }
+  }
+
+  /* Lines "inked" one after the other once the title is written */
+  :global(.book-anim) .ink {
+    clip-path: inset(0 100% 0 0);
+  }
+  :global(.book-anim) .book.is-written .ink {
+    clip-path: inset(-24px -24px -24px -24px);
+    transition: clip-path 0.65s ease-out calc(var(--d) * 0.2s);
   }
 </style>
