@@ -6,29 +6,20 @@ import { t, type Lang } from '../../../i18n/utils';
 interface Props {
   lang: Lang;
   meta: { index: number; id?: string; head?: string };
-  from: number;
-  to: number;
-  first?: boolean;
 }
-const { lang, meta, from, to, first = false } = Astro.props;
+/* All the questions on one page: an accordion where one answer is open at a time. */
+const { lang, meta } = Astro.props;
 const d = t(lang);
-const items = d.faq.items.slice(from, to);
-const last = to >= d.faq.items.length;
+const items = d.faq.items;
 ---
 
 <Page {...meta} variant="paper" class="faq-page">
-  {
-    first && (
-      <>
-        <p class="kicker-sm ink" style="--d: 0">{d.faq.kicker}</p>
-        <h2 class="h-title ink" style="--d: 1">{d.faq.title}</h2>
-      </>
-    )
-  }
+  <p class="kicker-sm ink" style="--d: 0">{d.faq.kicker}</p>
+  <h2 class="h-title ink" style="--d: 1">{d.faq.title}</h2>
   <div class="qa">
     {
       items.map((item, n) => (
-        <details name={`faq-${meta.index}`} class="rise" style={`--d: ${n + 2}`} open={n === 0}>
+        <details name={`faq-${meta.index}`} class="rise" style={`--d: ${Math.min(n + 2, 8)}`} open={n === 0}>
           <summary>
             <span>{item.q}</span>
             <span class="qa__icon" aria-hidden="true" />
@@ -39,8 +30,8 @@ const last = to >= d.faq.items.length;
     }
   </div>
   {
-    last && site.email && (
-      <p class="note faq-page__ask ink" style="--d: 6">
+    site.email && (
+      <p class="note faq-page__ask ink" style="--d: 9">
         {d.sketch.askUs} → <a href={`mailto:${site.email}`}>{site.email}</a>
       </p>
     )

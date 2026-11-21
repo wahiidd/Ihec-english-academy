@@ -61,8 +61,7 @@ const entries: Entry[] = [
   ...(hasEvents ? [{ C: Events, chapter: 'events' as const }] : []),
   { C: Activities, chapter: 'activities' },
   { C: Team, chapter: 'team' },
-  { C: Faq, chapter: 'faq', props: { from: 0, to: 4, first: true } },
-  { C: Faq, props: { from: 4, to: 7 } },
+  { C: Faq, chapter: 'faq' },
   { C: Contact, chapter: 'contact' },
 ];
 // A book has an even number of pages: pad with a notes page before the back cover if needed.
@@ -102,13 +101,20 @@ const other = otherLang(lang);
     <img src="/images/emblem.png" alt="" width="240" height="192" />
     <span><span class="bk-brand__ihec">IHEC Carthage</span><span class="bk-brand__name">English <em>Academy</em></span></span>
   </a>
-  <button class="bk-toc-btn" type="button" aria-expanded="false" aria-controls="bk-toc" data-toc-btn>
-    <Icon name="menu" size={18} />
-    <span>{d.sketch.contents}</span>
-  </button>
+  <div class="bk-header__mid">
+    <button class="bk-toc-btn" type="button" aria-expanded="false" aria-controls="bk-toc" data-toc-btn>
+      <Icon name="menu" size={18} />
+      <span>{d.sketch.contents}</span>
+    </button>
+    <p class="bk-status" aria-live="polite">
+      <span class="bk-status__chapter" data-status-chapter>{d.hero.coverTitle}</span>
+      <span class="bk-status__page" data-status-page></span>
+    </p>
+  </div>
   <a class="bk-lang" href={homePath(other)} hreflang={other} lang={other} title={d.nav.switchLabel} data-lang-switch>
     <Icon name="globe" size={16} /><span>{d.nav.switchShort}</span>
   </a>
+  <div class="bk-progress" aria-hidden="true"><span data-progress></span></div>
 </header>
 
 <nav class="bk-toc" id="bk-toc" aria-label={d.sketch.contents} data-toc hidden>
@@ -128,6 +134,9 @@ const other = otherLang(lang);
         ))
       }
     </ol>
+    <a class="bk-toc__lang" href={homePath(other)} hreflang={other} lang={other} data-lang-switch>
+      <Icon name="globe" size={16} /><span>{d.nav.switchLabel}</span>
+    </a>
   </div>
 </nav>
 
@@ -153,11 +162,6 @@ const other = otherLang(lang);
   <button class="bk-arrow bk-arrow--next" type="button" data-nav="next" aria-label={d.sketch.next}>
     <span aria-hidden="true">›</span>
   </button>
-  <p class="bk-status" aria-live="polite">
-    <span class="bk-status__chapter" data-status-chapter>{d.hero.coverTitle}</span>
-    <span class="bk-status__page" data-status-page></span>
-  </p>
-  <div class="bk-progress" aria-hidden="true"><span data-progress></span></div>
 </main>
 
 <nav class="bk-bar" aria-label={d.sketch.contents}>
@@ -252,12 +256,49 @@ const other = otherLang(lang);
   };
 
   /* ---------- desktop: turning leaves ---------- */
+  // The spread fills the whole stage: the content keeps its design scale (s) and the pages
+  // grow in whichever direction has room to spare, so photos and drawings never change shape.
+  const stage = document.querySelector<HTMLElement>('[data-stage]')!;
   const fitDesktop = () => {
-    const header = 64;
-    const room = 150; // arrows + status
-    const s = Math.min((innerWidth - room) / (PW * 2), (innerHeight - header - 92) / PH, 1.25);
-    scaler.style.setProperty('--s', String(Math.max(0.5, s)));
+    const W = stage.clientWidth;
+    const H = stage.clientHeight;
+    const s = Math.max(0.5, Math.min(W / (PW * 2 + 2 * 64), H / PH, 1.4));
+    const pw = W / (2 * s);
+    const ph = H / s;
+    html.style.setProperty('--s', String(s));
+    html.style.setProperty('--pw', `${pw}px`);
+    html.style.setProperty('--ph', `${ph}px`);
+    html.style.setProperty('--px', `${(pw - PW) / 2}px`);
+    html.style.setProperty('--py', `${(ph - PH) / 2}px`);
   };
+  const clearDesktopFit = () => ['--s', '--pw', '--ph', '--px', '--py'].forEach((v) => html.style.removeProperty(v));
+
+  // Every page must fit without scrolling: when its content is taller than the page,
+  // shrink it with CSS zoom (text reflows, so it stays as large as possible).
+  const canZoom = CSS.supports('zoom', '0.5');
+  // Compared on screen (getBoundingClientRect), so it holds whatever the engine does with zoom.
+  const fits = (face: HTMLElement, inner: HTMLElement) => {
+    const room = face.getBoundingClientRect().height;
+    const box = inner.getBoundingClientRect().height;
+    const content = inner.scrollHeight * (box / (inner.clientHeight || 1));
+    return box <= room + 1 && content <= room + 1;
+  };
+  const fitPage = (face: HTMLElement) => {
+    const inner = face.querySelector<HTMLElement>('.face__inner');
+    if (!inner || !canZoom || !face.clientHeight) return;
+    inner.style.removeProperty('--z');
+    if (fits(face, inner)) return;
+    let lo = 0.6;
+    let hi = 1;
+    for (let k = 0; k < 7; k++) {
+      const z = (lo + hi) / 2;
+      inner.style.setProperty('--z', String(z));
+      if (fits(face, inner)) lo = z;
+      else hi = z;
+    }
+    inner.style.setProperty('--z', String(lo));
+  };
+  const fitPages = () => faces.forEach(fitPage);
 
   const applyDesktop = (target: number, instant = false) => {
     target = Math.max(0, Math.min(L, target));
@@ -275,6 +316,7 @@ const other = otherLang(lang);
       const leaf = leaves[i];
       const delay = instant || !animate ? 0 : Math.min(k * 90, 600);
       leaf.style.transitionDelay = `${delay}ms`;
+      leaf.style.setProperty('--delay', `${delay}ms`);
       leaf.style.zIndex = String(L * 2 + k);
       leaf.classList.add('is-turning');
       leaf.classList.toggle('is-flipped', i < target);
@@ -384,19 +426,36 @@ const other = otherLang(lang);
     html.classList.toggle('bk-mobile', !desktop);
     if (desktop) {
       fitDesktop();
+      fitPages();
       faces.forEach((f) => f.removeAttribute('inert'));
       leaves.forEach((l) => l.classList.remove('is-flipped'));
       spread = 0;
       applyDesktop(Math.ceil(keep / 2), true);
       restack();
     } else {
+      clearDesktopFit();
+      fitPages();
       faces.forEach((f) => { f.removeAttribute('inert'); f.removeAttribute('aria-hidden'); });
       requestAnimationFrame(() => goMobile(keep, true));
     }
   };
 
   book.addEventListener('scroll', () => !desktop && onTrackScroll(), { passive: true });
-  addEventListener('resize', () => desktop && fitDesktop());
+  let resizeTimer = 0;
+  addEventListener('resize', () => {
+    if (desktop) fitDesktop();
+    clearTimeout(resizeTimer);
+    resizeTimer = window.setTimeout(() => {
+      fitPages();
+      if (!desktop) book.scrollLeft = page * book.clientWidth;
+    }, 150);
+  });
+  // Fonts change line breaks: fit again once they are ready.
+  document.fonts?.ready.then(fitPages);
+  // A FAQ answer opening or closing changes the height of its page.
+  book.querySelectorAll('details').forEach((det) =>
+    det.addEventListener('toggle', () => fitPage(det.closest<HTMLElement>('.face')!)),
+  );
 
   const startId = decodeURIComponent(location.hash.slice(1));
   const startPage = startId ? Math.max(0, pageOfId(startId)) : 0;
