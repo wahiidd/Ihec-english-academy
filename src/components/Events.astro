@@ -1,7 +1,7 @@
 ---
 import Icon from './Icon.astro';
 import RegistrationDialog from './RegistrationDialog.astro';
-import { closesAt, eventTime, events } from '../data/events';
+import { closesAt, eventTime, upcomingEvents } from '../data/events';
 import { t, formatDate, launchDateLabel, type Lang } from '../i18n/utils';
 
 interface Props {
@@ -10,14 +10,14 @@ interface Props {
 
 const { lang } = Astro.props;
 const dict = t(lang).events;
-const upcoming = events
-  .filter((e) => Date.parse(e.date) >= Date.now() - 86_400_000)
-  .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+// The whole section (and its nav link) disappears when nothing is scheduled.
+const upcoming = upcomingEvents();
 const hasRegistration = upcoming.some((e) => e.registration);
 // Registration closes at 00:00 on the event day: show the eve as the last day.
 const lastDay = (iso: string) => formatDate(new Date(Date.parse(iso) - 1).toISOString(), lang, { weekday: 'long' });
 ---
 
+{upcoming.length > 0 && (
 <section class="section section--soft" id="events">
   <div class="container">
     <div class="section-head">
@@ -95,6 +95,7 @@ const lastDay = (iso: string) => formatDate(new Date(Date.parse(iso) - 1).toISOS
     }
   </div>
 </section>
+)}
 
 {hasRegistration && <RegistrationDialog lang={lang} />}
 

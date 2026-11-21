@@ -1,0 +1,211 @@
+---
+import Icon from './Icon.astro';
+import Portrait from './Portrait.astro';
+import { site } from '../config/site';
+import { projectLead } from '../data/team';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).registration;
+const photoAlt = t(lang).team.photoOf.replace('{name}', projectLead.name);
+---
+
+<section class="section" id="registration">
+  <div class="container">
+    <div class="section-head">
+      <p class="kicker">{dict.kicker}</p>
+      <h2>{dict.title}</h2>
+    </div>
+
+    <div class="reg-grid">
+      <div class="topics">
+        <p class="topics__intro">{dict.intro}</p>
+        <ul>
+          {dict.topics.map((topic) => <li>{topic}</li>)}
+        </ul>
+      </div>
+
+      <aside class="benefit" aria-label={dict.benefitKicker}>
+        <p class="benefit__kicker">{dict.benefitKicker}</p>
+        <p class="benefit__amount">{dict.benefitAmount}</p>
+        <p class="benefit__text">{dict.benefitText}</p>
+      </aside>
+    </div>
+
+    <div class="bottom">
+      <article class="coordinator">
+        <Portrait slug={projectLead.slug} name={projectLead.name} alt={photoAlt} width={96} class="coordinator__photo" />
+        <div>
+          <p class="coordinator__label">{dict.coordinatorLabel}</p>
+          <h3>{dict.coordinatorName}</h3>
+          {dict.coordinatorRoles.map((role) => <p class="coordinator__role">{role}</p>)}
+          {
+            site.email && (
+              <a class="btn btn--primary coordinator__cta" href={`mailto:${site.email}`}>
+                <Icon name="mail" size={18} /> {dict.contactCta}
+              </a>
+            )
+          }
+        </div>
+      </article>
+
+      <aside class="plan">
+        <h3><Icon name="calendar" size={20} /> {dict.planTitle}</h3>
+        {dict.planText.map((p, i) => <p class:list={[i === 0 && 'plan__lead']}>{p}</p>)}
+      </aside>
+    </div>
+  </div>
+</section>
+
+<style>
+  .reg-grid {
+    display: grid;
+    gap: 1.25rem;
+  }
+  @media (min-width: 900px) {
+    .reg-grid {
+      grid-template-columns: 1.4fr 1fr;
+    }
+  }
+  .topics {
+    padding: clamp(1.5rem, 4vw, 2rem);
+    border-radius: var(--radius-lg);
+    background: var(--bg-soft);
+  }
+  .topics__intro {
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .topics ul {
+    display: grid;
+    gap: 0.55rem;
+    margin: 1rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 640px) {
+    .topics ul {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .topics li {
+    position: relative;
+    padding-left: 1.3rem;
+    color: var(--muted);
+  }
+  .topics li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+
+  .benefit {
+    display: grid;
+    align-content: center;
+    gap: 0.5rem;
+    padding: clamp(1.5rem, 4vw, 2rem);
+    border-radius: var(--radius-lg);
+    background: var(--navy);
+    background-image: radial-gradient(22rem 14rem at 100% 0%, rgb(43 165 155 / 0.4), transparent 70%);
+    color: var(--on-navy-muted);
+  }
+  .benefit__kicker {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-light);
+  }
+  .benefit__amount {
+    font-family: var(--font-serif);
+    font-size: clamp(2.8rem, 7vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1;
+    color: #fff;
+  }
+  .benefit__text {
+    font-size: 0.95rem;
+  }
+
+  .bottom {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 1.25rem;
+  }
+  @media (min-width: 900px) {
+    .bottom {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .coordinator {
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    padding: clamp(1.5rem, 4vw, 2rem);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--line);
+    background: #fff;
+  }
+  .coordinator :global(.coordinator__photo) {
+    width: 96px;
+    flex-shrink: 0;
+  }
+  .coordinator__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-ink);
+  }
+  .coordinator h3 {
+    margin: 0.25rem 0 0.4rem;
+    font-size: 1.4rem;
+  }
+  .coordinator__role {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .coordinator__cta {
+    margin-top: 1rem;
+    min-height: 44px;
+    padding: 0.55rem 1.2rem;
+    font-size: 0.92rem;
+  }
+
+  .plan {
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+    padding: clamp(1.5rem, 4vw, 2rem);
+    border-radius: var(--radius-lg);
+    background: #fff8ec;
+    border: 1px solid #f3dcb2;
+  }
+  .plan h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.3rem;
+  }
+  .plan p {
+    color: var(--ink);
+    font-size: 0.95rem;
+  }
+  .plan__lead {
+    font-weight: 600;
+  }
+  @media (max-width: 479px) {
+    .coordinator {
+      flex-direction: column;
+    }
+  }
+</style>

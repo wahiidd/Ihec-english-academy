@@ -15,29 +15,36 @@ const dict = t(lang).ielts;
       <p class="kicker">{dict.kicker}</p>
       <h2>{dict.title}</h2>
       <p class="ielts__lead">{dict.lead}</p>
-
-      <div class="beyond">
-        <h3>{dict.beyondTitle}</h3>
-        <p>{dict.beyondText}</p>
-        <ul class="tags">
-          {dict.tags.map((tag) => <li>{tag}</li>)}
-        </ul>
-      </div>
     </div>
 
     <ol class="skills">
       {
-        dict.skills.map((skill, i) => (
+        dict.skills.map((skill) => (
           <li class="skill">
             <span class="skill__letter" aria-hidden="true">{skill.title[0]}</span>
             <div>
-              <h3>{skill.title}</h3>
+              <h3 lang="en">{skill.title}</h3>
               <p>{skill.text}</p>
             </div>
           </li>
         ))
       }
     </ol>
+  </div>
+
+  <div class="container which">
+    <h3 class="which__title">{dict.whichTitle}</h3>
+    <div class="which__grid">
+      {
+        dict.tests.map((test) => (
+          <article class="test">
+            <h4 lang="en">{test.title}</h4>
+            <p>{test.text}</p>
+          </article>
+        ))
+      }
+    </div>
+    <p class="which__note">{dict.whichNote}</p>
   </div>
 </section>
 
@@ -57,38 +64,6 @@ const dict = t(lang).ielts;
     font-size: 1.075rem;
     color: var(--muted);
   }
-
-  .beyond {
-    margin-top: 2rem;
-    padding: 1.5rem 1.75rem;
-    border-left: 4px solid var(--teal);
-    border-radius: 0 var(--radius) var(--radius) 0;
-    background: var(--bg-soft);
-  }
-  .beyond h3 {
-    margin-bottom: 0.4rem;
-  }
-  .beyond p {
-    color: var(--muted);
-  }
-  .tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin: 1rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .tags li {
-    padding: 0.3rem 0.8rem;
-    border-radius: 999px;
-    background: #fff;
-    border: 1px solid var(--line);
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--navy);
-  }
-
   .skills {
     display: grid;
     gap: 1rem;
@@ -132,5 +107,45 @@ const dict = t(lang).ielts;
     font-size: 1.3rem;
     font-weight: 700;
     color: var(--teal-light);
+  }
+
+  .which {
+    margin-top: clamp(2.5rem, 6vw, 4rem);
+  }
+  .which__title {
+    margin-bottom: 1.25rem;
+    font-size: 1.5rem;
+  }
+  .which__grid {
+    display: grid;
+    gap: 1rem;
+  }
+  @media (min-width: 720px) {
+    .which__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  .test {
+    padding: 1.5rem 1.75rem;
+    border-radius: var(--radius);
+    background: var(--bg-soft);
+    border-top: 4px solid var(--teal);
+  }
+  .test:last-child {
+    border-top-color: var(--blue);
+  }
+  .test h4 {
+    margin: 0 0 0.4rem;
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    color: var(--navy);
+  }
+  .test p {
+    color: var(--muted);
+  }
+  .which__note {
+    margin-top: 1rem;
+    font-style: italic;
+    color: var(--muted);
   }
 </style>

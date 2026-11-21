@@ -64,6 +64,12 @@ const clock = (iso: string, lang: Lang) =>
 export const eventTime = (e: AcademyEvent, lang: Lang) =>
   e.showTime === false ? '' : e.endDate ? `${clock(e.date, lang)}–${clock(e.endDate, lang)}` : clock(e.date, lang);
 
+/** Events still to come (kept visible until the end of the event day). */
+export const upcomingEvents = (now = Date.now()) =>
+  events
+    .filter((e) => Date.parse(e.endDate ?? e.date) + 4 * 3_600_000 >= now)
+    .sort((a, b) => Date.parse(a.date) - Date.parse(b.date));
+
 export const findEvent = (slug: string) => events.find((e) => e.slug === slug);
 
 /** End of the day before the event (Tunis time, UTC+1), unless set explicitly. */

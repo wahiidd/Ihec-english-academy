@@ -12,7 +12,6 @@ const dict = t(lang).hero;
 const launchDate = launchDateLabel(lang);
 // Initial state at build time; the script below re-evaluates it in the browser.
 const launched = Date.now() >= Date.parse(site.launchDate);
-const joinHref = site.joinUrl || '#membership';
 ---
 
 <section class="hero">
@@ -42,17 +41,12 @@ const joinHref = site.joinUrl || '#membership';
       <h1>
         {dict.titleStart} <em>{dict.titleAccent}</em>
       </h1>
+      <p class="hero__tagline">{dict.tagline}</p>
       <p class="hero__lead">{dict.lead}</p>
 
       <div class="hero__ctas">
-        <a
-          class="btn btn--primary"
-          href={joinHref}
-          {...(site.joinUrl ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-        >
-          {dict.ctaPrimary}
-        </a>
-        <a class="btn btn--ghost" href="#activities">{dict.ctaSecondary}</a>
+        <a class="btn btn--primary" href="#registration">{dict.ctaPrimary}</a>
+        <a class="btn btn--ghost" href="#pathway">{dict.ctaSecondary}</a>
       </div>
     </div>
 
@@ -169,6 +163,9 @@ const joinHref = site.joinUrl || '#membership';
     text-transform: uppercase;
     color: var(--blue-ink);
   }
+  h1 {
+    font-size: clamp(2rem, 4.2vw, 3.1rem);
+  }
   h1 em {
     display: block;
     font-style: italic;
@@ -177,6 +174,15 @@ const joinHref = site.joinUrl || '#membership';
     background-clip: text;
     color: transparent;
     padding-bottom: 0.08em;
+  }
+  .hero__tagline {
+    margin-top: 1.25rem;
+    font-weight: 700;
+    color: var(--teal-ink);
+    font-size: clamp(1.02rem, 1.6vw, 1.15rem);
+  }
+  .hero__tagline + .hero__lead {
+    margin-top: 0.6rem;
   }
   .hero__lead {
     max-width: 38rem;

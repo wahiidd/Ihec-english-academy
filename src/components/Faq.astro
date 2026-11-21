@@ -1,0 +1,101 @@
+---
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).faq;
+---
+
+<section class="section section--soft" id="faq">
+  <div class="container faq">
+    <div class="section-head section-head--center">
+      <p class="kicker">{dict.kicker}</p>
+      <h2>{dict.title}</h2>
+    </div>
+
+    <div class="faq__list">
+      {
+        dict.items.map((item, i) => (
+          <details name="faq" open={i === 0}>
+            <summary>
+              <span>{item.q}</span>
+              <span class="faq__icon" aria-hidden="true" />
+            </summary>
+            <p>{item.a}</p>
+          </details>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  .faq__list {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+  details {
+    border-radius: var(--radius);
+    background: #fff;
+    border: 1px solid var(--line);
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  details[open] {
+    border-color: rgb(43 165 155 / 0.45);
+    box-shadow: var(--shadow);
+  }
+  summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 56px;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    color: var(--navy);
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker {
+    display: none;
+  }
+  summary:hover {
+    color: var(--teal-ink);
+  }
+  .faq__icon {
+    position: relative;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg-soft);
+  }
+  .faq__icon::before,
+  .faq__icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--teal-ink);
+    transform: translate(-50%, -50%);
+    transition: transform 0.2s ease;
+  }
+  .faq__icon::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+  details[open] .faq__icon::after {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  details p {
+    padding: 0 1.25rem 1.25rem;
+    color: var(--muted);
+  }
+</style>

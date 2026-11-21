@@ -1,0 +1,174 @@
+---
+import Icon from './Icon.astro';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const dict = t(lang).pathway;
+---
+
+<section class="section section--soft" id="pathway">
+  <div class="container">
+    <div class="section-head section-head--center">
+      <p class="kicker">{dict.kicker}</p>
+      <h2>{dict.title}</h2>
+    </div>
+
+    <ol class="steps">
+      {
+        dict.steps.map((step, i) => (
+          <li class="step">
+            <span class="step__n" aria-hidden="true">{i + 1}</span>
+            <h3>{step.title}</h3>
+            <p>{step.text}</p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="prep">
+      <div class="prep__head">
+        <h3>{dict.prepTitle}</h3>
+        <p>{dict.prepIntro}</p>
+      </div>
+      <ul class="prep__list">
+        {
+          dict.prep.map((item) => (
+            <li>
+              <span class="prep__check" aria-hidden="true"><Icon name="check" size={16} /></span>
+              {item}
+            </li>
+          ))
+        }
+      </ul>
+      <p class="prep__note">{dict.prepNote}</p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .steps {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: step;
+  }
+  @media (min-width: 640px) {
+    .steps {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 1000px) {
+    .steps {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+  .step {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    padding: 1.5rem;
+    border-radius: var(--radius);
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+  .step__n {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--gradient);
+    color: #fff;
+    font-family: var(--font-serif);
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  .step h3 {
+    font-size: 1.15rem;
+  }
+  .step p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  /* Arrow between steps on wide screens */
+  @media (min-width: 1000px) {
+    .step:not(:last-child)::after {
+      content: '→';
+      position: absolute;
+      top: 1.85rem;
+      right: -0.85rem;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      width: 1.5rem;
+      height: 1.5rem;
+      border-radius: 50%;
+      background: var(--bg-soft);
+      color: var(--teal-ink);
+      font-weight: 700;
+    }
+  }
+
+  .prep {
+    display: grid;
+    gap: 1.25rem 3rem;
+    margin-top: clamp(2rem, 5vw, 3rem);
+    padding: clamp(1.5rem, 4vw, 2.25rem);
+    border-radius: var(--radius-lg);
+    background: #fff;
+    box-shadow: var(--shadow);
+  }
+  @media (min-width: 900px) {
+    .prep {
+      grid-template-columns: 0.8fr 1.2fr;
+      align-items: start;
+    }
+    .prep__note {
+      grid-column: 1 / -1;
+    }
+  }
+  .prep__head h3 {
+    font-size: 1.5rem;
+  }
+  .prep__head p {
+    margin-top: 0.5rem;
+    color: var(--muted);
+  }
+  .prep__list {
+    display: grid;
+    gap: 0.7rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .prep__list li {
+    display: flex;
+    gap: 0.7rem;
+    align-items: flex-start;
+  }
+  .prep__check {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    margin-top: 1px;
+    border-radius: 50%;
+    background: rgb(43 165 155 / 0.14);
+    color: var(--teal-ink);
+  }
+  .prep__note {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.92rem;
+    font-style: italic;
+    color: var(--muted);
+  }
+</style>

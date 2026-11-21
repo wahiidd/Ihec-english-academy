@@ -6,7 +6,9 @@ import Hero from './Hero.astro';
 import About from './About.astro';
 import Activities from './Activities.astro';
 import Certifications from './Certifications.astro';
-import Membership from './Membership.astro';
+import Pathway from './Pathway.astro';
+import IeltsRegistration from './IeltsRegistration.astro';
+import Faq from './Faq.astro';
 import Partner from './Partner.astro';
 import PartnershipGallery from './PartnershipGallery.astro';
 import Team from './Team.astro';
@@ -28,13 +30,15 @@ const { lang } = Astro.props;
   <main id="main">
     <Hero lang={lang} />
     <About lang={lang} />
-    <Activities lang={lang} />
     <Certifications lang={lang} />
-    <Membership lang={lang} />
+    <Pathway lang={lang} />
+    <IeltsRegistration lang={lang} />
     <Partner lang={lang} />
     <PartnershipGallery lang={lang} />
+    <Activities lang={lang} />
     <Team lang={lang} />
     <Events lang={lang} />
+    <Faq lang={lang} />
   </main>
   <Footer lang={lang} />
 </Base>

@@ -2,14 +2,15 @@ export const en = {
   meta: {
     title: 'IHEC English Academy — Communicate · Lead · Succeed',
     description:
-      'The English academy of IHEC Carthage: courses, hybrid workshops, debates and training sessions to improve your English and prepare for IELTS and other international certifications.',
+      'IHEC English Academy — IELTS preparation and international certification for IHEC Carthage students. Prepare at IHEC. Take IELTS with the British Council.',
     ogAlt: 'IHEC Carthage English Academy logo',
   },
   nav: {
     about: 'About',
-    activities: 'Activities',
     ielts: 'IELTS',
-    membership: 'Membership',
+    pathway: 'Pathway',
+    registration: 'IELTS registration',
+    faq: 'FAQ',
     team: 'Team',
     events: 'Events',
     contact: 'Contact',
@@ -20,13 +21,14 @@ export const en = {
     switchShort: 'FR',
   },
   hero: {
-    eyebrow: 'IHEC Carthage',
-    titleStart: 'Your English,',
-    titleAccent: 'ready for the world.',
+    eyebrow: 'IELTS Preparation & International Certification',
+    titleStart: 'Your journey towards international opportunities',
+    titleAccent: 'starts here.',
+    tagline: 'Prepare at IHEC. Take IELTS with the British Council.',
     lead:
-      'The English academy of IHEC Carthage: courses, workshops, debates and training sessions to improve your English and prepare for IELTS and other international certifications.',
-    ctaPrimary: 'Join the academy',
-    ctaSecondary: 'Explore our activities',
+      'Planning to apply for a Master’s degree, a PhD, a scholarship or an international academic opportunity? The IHEC English Academy supports IHEC students in preparing for IELTS and accessing international English certification through its partnership with the British Council.',
+    ctaPrimary: 'IELTS registration',
+    ctaSecondary: 'Discover the IELTS pathway',
     launchBefore: 'Launching on',
     launchAfter: 'Open since',
     countdownLabel: 'Starts in',
@@ -37,8 +39,8 @@ export const en = {
     kicker: 'About us',
     title: 'An academy built for IHEC students',
     paragraphs: [
-      'IHEC English Academy gives IHEC Carthage students a place to practise, improve and certify their English. Throughout the academic year, it offers courses, workshops, debates and training sessions built around the skills that matter at university, in international exams and in professional life.',
-      'Placed under the supervision of IHEC Carthage, the academy is led by Mrs. Dorra Bechaouch, English Teacher and Business Communication Trainer, together with a team of student ambassadors.',
+      'IHEC English Academy gives IHEC Carthage students a place to practise, improve and certify their English, with a clear focus on IELTS preparation and international certification, in partnership with the British Council.',
+      'Placed under the supervision of IHEC Carthage, the academy is led by Mrs. Dorra Bechaouch, Project Lead and IELTS Registration Coordinator, together with a team of project coordinators.',
     ],
     facts: {
       launch: 'Launch',
@@ -46,6 +48,8 @@ export const en = {
       supervisionValue: 'IHEC Carthage',
       focus: 'Main focus',
       focusValue: 'IELTS',
+      membership: 'Membership',
+      membershipValue: 'Free for IHEC students',
     },
     pillars: [
       { title: 'Communicate', text: 'Express your ideas clearly and confidently, in speaking and in writing.' },
@@ -79,37 +83,104 @@ export const en = {
     },
   },
   ielts: {
-    kicker: 'Certifications',
-    title: 'Our main focus: IELTS',
+    kicker: 'What is IELTS?',
+    title: 'An internationally recognised English test',
     lead:
-      'IELTS is one of the most widely recognised English tests for studying, working and living abroad. Our training sessions prepare you for all four parts of the exam.',
+      'IELTS (International English Language Testing System) is an internationally recognised English-language proficiency test assessing four skills. It is commonly required for university admissions, postgraduate studies, scholarships and international mobility, depending on the institution’s requirements.',
     skills: [
-      { title: 'Listening', text: 'Follow recordings, different accents and key details.' },
+      { title: 'Listening', text: 'Understand recordings, different accents and key details.' },
       { title: 'Reading', text: 'Read efficiently and find information under time pressure.' },
       { title: 'Writing', text: 'Produce clear, well-structured and well-argued texts.' },
       { title: 'Speaking', text: 'Speak fluently and coherently in a face-to-face interview.' },
     ],
-    beyondTitle: 'Beyond IELTS',
-    beyondText:
-      'The academy also prepares you for placement tests and other international certifications, and above all helps you raise your overall level of English.',
-    tags: ['Placement tests', 'TOEIC', 'TOEFL', 'Cambridge English'],
-  },
-  membership: {
-    kicker: 'Membership',
-    title: 'Join the academy',
-    lead: 'Membership is reserved for IHEC Carthage students.',
-    currency: 'TND',
-    period: 'per year',
-    includesTitle: 'Your membership includes',
-    includes: [
-      'Access to the academy’s courses, workshops, debates and training sessions',
-      'Preparation for IELTS and placement tests',
-      'Workshops on campus and online (hybrid)',
-      'A community of motivated IHEC students',
+    whichTitle: 'Which test do I need?',
+    tests: [
+      { title: 'IELTS Academic', text: 'Designed for candidates applying for higher education, including Master’s and PhD programmes.' },
+      { title: 'IELTS General Training', text: 'Designed for certain work, migration and other non-academic purposes.' },
     ],
-    cta: 'Register now',
-    soon: 'Registration opens soon',
-    soonNote: 'Registration details will be announced on our social media.',
+    whichNote: 'Always check the requirements of your target institution before registering.',
+  },
+  pathway: {
+    kicker: 'IELTS pathway',
+    title: 'The IHEC English Academy IELTS pathway',
+    steps: [
+      { title: 'Assess your level and objective', text: 'Identify your current English proficiency, target IELTS score and application deadline.' },
+      { title: 'Prepare at IHEC', text: 'Improve your Listening, Reading, Writing and Speaking skills through structured preparation, practice and feedback.' },
+      { title: 'Register through IHEC', text: 'Get information and coordinate your IELTS registration through the designated IHEC IELTS Registration Coordinator.' },
+      { title: 'Take the official IELTS test', text: 'Sit your examination with the British Council at an authorised test venue.' },
+    ],
+    prepTitle: 'IELTS preparation at IHEC',
+    prepIntro: 'The preparation programme is designed to help students:',
+    prep: [
+      'Understand the IELTS test format and requirements.',
+      'Develop the four language skills.',
+      'Improve academic vocabulary and language accuracy.',
+      'Practise IELTS task types and examination strategies.',
+      'Develop confidence in Writing and Speaking.',
+      'Learn to manage their time effectively during the test.',
+    ],
+    prepNote: 'Programme duration, timetable, groups and registration details will be announced following confirmation.',
+  },
+  registration: {
+    kicker: 'IELTS registration',
+    title: 'IELTS registration through IHEC',
+    intro: 'Students can contact the IHEC English Academy IELTS Registration Coordinator for information about:',
+    topics: [
+      'Available examination sessions and dates',
+      'Registration deadlines',
+      'Required documents and information',
+      'Payment procedures',
+      'Registration confirmation',
+      'Eligibility for the agreed student discount',
+    ],
+    benefitKicker: 'A special benefit for IHEC students',
+    benefitAmount: '−70 TND',
+    benefitText:
+      'Students registering through the IHEC-coordinated registration process may benefit from an agreed 70 TND discount on IELTS registration, subject to the applicable conditions and confirmation.',
+    coordinatorLabel: 'IELTS Registration Coordinator',
+    coordinatorName: 'Mrs. Dorra Bechaouch',
+    coordinatorRoles: ['Project Lead – IHEC English Academy', 'IELTS Registration Coordinator – IHEC Carthage'],
+    contactCta: 'Contact the Academy',
+    planTitle: 'Planning your exam?',
+    planText: [
+      'If you are applying for a Master’s or PhD programme, don’t wait until the last minute!',
+      'Make sure you check your required IELTS score, application deadline, available test dates, registration deadline and preparation time.',
+      'Students with urgent deadlines, particularly those planning applications for December, are encouraged to contact the Academy as soon as possible.',
+    ],
+  },
+  faq: {
+    kicker: 'FAQ',
+    title: 'Frequently asked questions',
+    items: [
+      {
+        q: 'Is the IHEC English Academy free?',
+        a: 'Yes. Membership of the IHEC English Academy is free for IHEC students. Registration for the official IELTS test is separate; IHEC students registering through IHEC may benefit from an agreed 70 TND discount.',
+      },
+      {
+        q: 'Can I take IELTS without joining the IHEC preparation programme?',
+        a: 'Preparation and examination registration are separate. Contact the IELTS Registration Coordinator for registration information.',
+      },
+      {
+        q: 'How long should I prepare?',
+        a: 'It depends on your current English level, target score and personal study commitment. Your preparation needs should be assessed before choosing your exam date.',
+      },
+      {
+        q: 'Which test should I take: Academic or General Training?',
+        a: 'IELTS Academic is designed for higher education, including Master’s and PhD programmes. IELTS General Training is for certain work, migration and other non-academic purposes. Always check the requirements of your target institution.',
+      },
+      {
+        q: 'Can I take IELTS in December?',
+        a: 'Availability depends on British Council test sessions and remaining places. Contact the Academy to check current possibilities.',
+      },
+      {
+        q: 'Is the IELTS exam held at IHEC?',
+        a: 'IHEC English Academy provides preparation and registration coordination. The official examination is administered by the British Council at its authorised test venue(s).',
+      },
+      {
+        q: 'How can I benefit from the 70 TND discount?',
+        a: 'Follow the registration procedure communicated by the IHEC IELTS Registration Coordinator to ensure that your registration is eligible for the agreed discount.',
+      },
+    ],
   },
   partner: {
     kicker: 'Partnership',

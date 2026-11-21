@@ -1,4 +1,5 @@
 ---
+import { upcomingEvents } from '../data/events';
 import Icon from './Icon.astro';
 import { t, homePath, otherLang, type Lang } from '../i18n/utils';
 
@@ -15,11 +16,12 @@ const base = onHome ? '' : homePath(lang);
 
 const links = [
   ['about', dict.nav.about],
-  ['activities', dict.nav.activities],
   ['ielts', dict.nav.ielts],
-  ['membership', dict.nav.membership],
+  ['pathway', dict.nav.pathway],
+  ['registration', dict.nav.registration],
+  ...(upcomingEvents().length ? ([['events', dict.nav.events]] as const) : []),
   ['team', dict.nav.team],
-  ['events', dict.nav.events],
+  ['faq', dict.nav.faq],
   ['contact', dict.nav.contact],
 ] as const;
 ---
