@@ -11,6 +11,8 @@ export const t = (lang: Lang) => dictionaries[lang];
 
 export const homePath = (lang: Lang) => (lang === 'en' ? '/' : '/fr/');
 
+export const bookPath = (lang: Lang) => (lang === 'en' ? '/book/' : '/fr/book/');
+
 export const otherLang = (lang: Lang): Lang => (lang === 'en' ? 'fr' : 'en');
 
 export const locale = (lang: Lang) => (lang === 'fr' ? 'fr-FR' : 'en-GB');

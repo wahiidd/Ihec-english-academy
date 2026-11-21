@@ -1,0 +1,17 @@
+---
+/* The site as a sketchbook (/book/ and /fr/book/). */
+import Base from '../layouts/Base.astro';
+import Book from './book/Book.astro';
+import { t, type Lang } from '../i18n/utils';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const d = t(lang);
+---
+
+<Base lang={lang} title={`${d.nav.bookVersion} — ${d.meta.title}`} alternates={false}>
+  <Book lang={lang} />
+</Base>

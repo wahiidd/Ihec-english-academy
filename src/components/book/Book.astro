@@ -30,7 +30,7 @@ import Contact from './pages/Contact.astro';
 import Notes from './pages/Notes.astro';
 import BackCover from './pages/BackCover.astro';
 import { upcomingEvents } from '../../data/events';
-import { t, homePath, otherLang, type Lang } from '../../i18n/utils';
+import { t, homePath, bookPath, otherLang, type Lang } from '../../i18n/utils';
 
 interface Props {
   lang: Lang;
@@ -97,7 +97,7 @@ const other = otherLang(lang);
 <a class="skip-link" href="#cover">{d.nav.skip}</a>
 
 <header class="bk-header">
-  <a class="bk-brand" href={homePath(lang)} aria-label={d.nav.home} data-goto="cover">
+  <a class="bk-brand" href={bookPath(lang)} aria-label={d.nav.home} data-goto="cover">
     <img src="/images/emblem.png" alt="" width="240" height="192" />
     <span><span class="bk-brand__ihec">IHEC Carthage</span><span class="bk-brand__name">English <em>Academy</em></span></span>
   </a>
@@ -111,9 +111,12 @@ const other = otherLang(lang);
       <span class="bk-status__page" data-status-page></span>
     </p>
   </div>
-  <a class="bk-lang" href={homePath(other)} hreflang={other} lang={other} title={d.nav.switchLabel} data-lang-switch>
-    <Icon name="globe" size={16} /><span>{d.nav.switchShort}</span>
-  </a>
+  <div class="bk-header__end">
+    <a class="bk-classic" href={homePath(lang)}><span aria-hidden="true">←</span> {d.nav.classicVersion}</a>
+    <a class="bk-lang" href={bookPath(other)} hreflang={other} lang={other} title={d.nav.switchLabel} data-lang-switch>
+      <Icon name="globe" size={16} /><span>{d.nav.switchShort}</span>
+    </a>
+  </div>
   <div class="bk-progress" aria-hidden="true"><span data-progress></span></div>
 </header>
 
@@ -134,7 +137,10 @@ const other = otherLang(lang);
         ))
       }
     </ol>
-    <a class="bk-toc__lang" href={homePath(other)} hreflang={other} lang={other} data-lang-switch>
+    <a class="bk-toc__lang" href={homePath(lang)}>
+      <span aria-hidden="true">←</span><span>{d.nav.classicVersion}</span>
+    </a>
+    <a class="bk-toc__lang bk-toc__lang--alt" href={bookPath(other)} hreflang={other} lang={other} data-lang-switch>
       <Icon name="globe" size={16} /><span>{d.nav.switchLabel}</span>
     </a>
   </div>

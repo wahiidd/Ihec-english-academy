@@ -21,6 +21,9 @@ export const fr: Dict = {
     home: 'IHEC English Academy — accueil',
     switchLabel: 'English version',
     switchShort: 'EN',
+    bookVersion: 'Version livre',
+    bookShort: 'Livre',
+    classicVersion: 'Version classique',
   },
   hero: {
     eyebrow: 'Préparation IELTS & Certification internationale',

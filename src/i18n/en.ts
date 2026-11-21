@@ -19,6 +19,9 @@ export const en = {
     home: 'IHEC English Academy — home',
     switchLabel: 'Version française',
     switchShort: 'FR',
+    bookVersion: 'Book version',
+    bookShort: 'Book',
+    classicVersion: 'Classic version',
   },
   hero: {
     eyebrow: 'IELTS Preparation & International Certification',

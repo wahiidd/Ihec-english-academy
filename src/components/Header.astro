@@ -1,7 +1,7 @@
 ---
 import { upcomingEvents } from '../data/events';
 import Icon from './Icon.astro';
-import { t, homePath, otherLang, type Lang } from '../i18n/utils';
+import { t, homePath, bookPath, otherLang, type Lang } from '../i18n/utils';
 
 interface Props {
   lang: Lang;
@@ -46,6 +46,11 @@ const links = [
     </nav>
 
     <div class="header__actions">
+      <a class="book-link" href={bookPath(lang)} title={dict.nav.bookVersion}>
+        <Icon name="courses" size={18} />
+        <span class="book-link__long">{dict.nav.bookVersion}</span>
+        <span class="book-link__short" aria-hidden="true">{dict.nav.bookShort}</span>
+      </a>
       <a
         class="lang-switch"
         href={homePath(other)}
@@ -202,6 +207,29 @@ const links = [
   .lang-switch:hover {
     border-color: var(--navy);
   }
+  .book-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 40px;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: var(--navy);
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+  }
+  .book-link:hover {
+    background: var(--navy-deep);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+  .book-link__short {
+    display: none;
+  }
 
   .menu-toggle {
     display: none;
@@ -279,6 +307,53 @@ const links = [
       padding-inline: 0.65rem;
     }
     .lang-switch :global(svg) {
+      display: none;
+    }
+    .header__actions {
+      gap: 0.35rem;
+    }
+    .book-link {
+      padding-inline: 0.65rem;
+    }
+    .book-link__long {
+      display: none;
+    }
+    .book-link__short {
+      display: inline;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .brand img {
+      height: 30px;
+    }
+    .brand__ihec {
+      font-size: 0.5rem;
+      letter-spacing: 0.14em;
+    }
+    .brand__name {
+      font-size: 0.78rem;
+    }
+    .book-link {
+      gap: 0.3rem;
+      padding-inline: 0.55rem;
+      font-size: 0.8rem;
+    }
+    .book-link :global(svg) {
+      display: none;
+    }
+    .lang-switch {
+      padding-inline: 0.5rem;
+      font-size: 0.8rem;
+    }
+    .menu-toggle {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  @media (max-width: 345px) {
+    .brand__ihec {
       display: none;
     }
   }
