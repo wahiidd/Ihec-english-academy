@@ -8,6 +8,9 @@ export const site = {
   /** Launch date (Tunisia time, UTC+1). Drives the hero countdown. */
   launchDate: '2026-10-05T00:00:00+01:00',
 
+  /** Annual membership fee, in Tunisian dinars. */
+  membershipFee: 30,
+
   /** Registration link (e.g. a Google Form). Empty = "Registration opens soon". */
   joinUrl: '',
 

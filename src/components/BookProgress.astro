@@ -10,7 +10,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const dict = t(lang).book;
-const ids = ['about', 'partner', 'ielts', 'pathway', 'registration', 'activities', 'team', ...(upcomingEvents().length ? ['events'] : []), 'faq', 'contact'] as const;
+const ids = ['about', 'partner', 'ielts', 'pathway', 'registration', 'activities', 'membership', 'team', ...(upcomingEvents().length ? ['events'] : []), 'faq', 'contact'] as const;
 const chapters = ids.map((id) => ({ id, label: dict.chapters[id as keyof typeof dict.chapters] }));
 const lines = 6; // per page
 ---

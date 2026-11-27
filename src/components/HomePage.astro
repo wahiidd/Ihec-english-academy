@@ -13,6 +13,7 @@ import BookProgress from './BookProgress.astro';
 import Partner from './Partner.astro';
 import PartnershipGallery from './PartnershipGallery.astro';
 import Team from './Team.astro';
+import Membership from './Membership.astro';
 import Events from './Events.astro';
 import Footer from './Footer.astro';
 import { t, type Lang } from '../i18n/utils';
@@ -37,6 +38,7 @@ const { lang } = Astro.props;
     <Pathway lang={lang} />
     <IeltsRegistration lang={lang} />
     <Activities lang={lang} />
+    <Membership lang={lang} />
     <Team lang={lang} />
     <Events lang={lang} />
     <Faq lang={lang} />
@@ -52,7 +54,7 @@ const { lang } = Astro.props;
       '.steps > li', '.skills > li', '.grid > *', '.cards > li', '.which__grid > *', '.reg-grid > *',
       '.bottom > *', '.faq__list > details', '.pillars > li', '.events > li',
     ];
-    const singles = ['.section-head', '.about__body', '.partner__text', '.partner__mark', '.lead', '.prep', '.which__title', '.which__note', '.group-title', '.contact', '.ielts__intro', '.credit'];
+    const singles = ['.section-head', '.about__body', '.partner__text', '.partner__mark', '.lead', '.prep', '.membership__info', '.price-card', '.which__title', '.which__note', '.group-title', '.contact', '.ielts__intro', '.credit'];
     const sections = [...document.querySelectorAll<HTMLElement>('main > section:not(:first-child), footer')];
     const targets: HTMLElement[] = [];
     for (const section of sections) {
